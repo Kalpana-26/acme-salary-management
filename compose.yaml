@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    environment:
+      REVIEWER_PASSWORD: "${REVIEWER_PASSWORD:?Set REVIEWER_PASSWORD}"
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - salary-data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+volumes:
+  salary-data:
