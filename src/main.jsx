@@ -93,7 +93,7 @@ function SalaryEditor({ id, close, onSaved }) {
 }
 
 function Masthead({ showNavigation, logout, busy, view }) {
-  return <header className="masthead"><div className="wrap masthead-inner">
+  return <header className={showNavigation ? 'masthead sidebar' : 'masthead'}><div className="wrap masthead-inner">
     <a className="brand" href="/"><span aria-hidden="true">A</span><div>ACME<small>People Operations</small></div></a>
     {showNavigation && <nav className="main-nav" aria-label="Main navigation">
       <a href="#dashboard" aria-current={view === 'dashboard' ? 'page' : undefined}>Dashboard</a>
@@ -297,16 +297,18 @@ function App() {
     }
   }
 
-  return <>
+  return <div className={session?.signedIn ? 'app-shell signed-in' : 'app-shell'}>
     <Masthead showNavigation={session?.signedIn} view={view}
       logout={session?.signedIn && session.signInRequired ? logout : null} busy={busy} />
-    {error && <div className="wrap"><p className="error" role="alert">
-      {error} {!session && <button onClick={loadSession}>Retry</button>}
-    </p></div>}
-    {!session && !error && <main className="wrap"><p role="status">Loading…</p></main>}
-    {session?.signedIn && <SalaryWorkspace onExpired={expireSession} view={view} />}
-    {session && !session.signedIn && <SignIn onSignIn={setSession} />}
-  </>;
+    <div className="app-content">
+      {error && <div className="wrap"><p className="error" role="alert">
+        {error} {!session && <button onClick={loadSession}>Retry</button>}
+      </p></div>}
+      {!session && !error && <main className="wrap"><p role="status">Loading…</p></main>}
+      {session?.signedIn && <SalaryWorkspace onExpired={expireSession} view={view} />}
+      {session && !session.signedIn && <SignIn onSignIn={setSession} />}
+    </div>
+  </div>;
 }
 
 createRoot(document.getElementById('root')).render(<App />);

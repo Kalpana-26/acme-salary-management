@@ -14,6 +14,7 @@
 body, h1, h2, h3, p { margin: 0; }
 .wrap { width: min(1344px, calc(100% - 64px)); margin-inline: auto; }
 .masthead { position: sticky; top: 0; z-index: 1; background: #1a1a1a; color: white; }
+.app-content { min-width: 0; }
 .masthead-inner { min-height: 70px; display: flex; align-items: center; gap: 22px; }
 .brand { display: flex; gap: 12px; align-items: center; font-weight: 750; line-height: 1.15; letter-spacing: .06em; color: inherit; text-decoration: none; }
 .brand > span { width: 37px; height: 37px; display: grid; place-items: center; border-radius: 11px; background: #ff6b00; color: #1a1a1a; font-size: 1.15rem; }
@@ -108,4 +109,23 @@ dialog h3 { margin-bottom: 6px; font-size: 1rem; }
 @media (max-width: 390px) {
   .controls form .field { flex-basis: 130px; }
   .pagination { justify-content: space-between; gap: 5px; padding-inline: 10px; }
+}
+@media (min-width: 900px) {
+  .app-shell.signed-in { display: grid; grid-template-columns: 208px minmax(0, 1fr); }
+  .sidebar { align-self: start; height: 100dvh; overflow-y: auto; }
+  .sidebar .masthead-inner {
+    width: 100%;
+    min-height: 100%;
+    padding: 24px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+  }
+  .sidebar .brand { margin-left: 7px; }
+  .sidebar .main-nav { flex-direction: column; gap: 5px; margin: 0; }
+  .sidebar .main-nav a { padding: 11px 13px; }
+  .sidebar .main-nav a[aria-current="page"] { box-shadow: inset 3px 0 var(--accent); }
+  .sidebar .logout { margin-top: auto; text-align: left; padding-inline: 13px; }
+  .signed-in .app-content .wrap { width: min(1344px, calc(100% - 48px)); }
 }
