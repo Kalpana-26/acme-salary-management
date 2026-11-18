@@ -53,26 +53,39 @@ button.reset { border-color: transparent; color: var(--accent-dark); }
 :focus-visible { outline: 3px solid #a7480c; outline-offset: 2px; }
 .section-heading, .directory-heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px 16px; }
 .section-heading span, .directory-heading span, .muted { color: var(--muted); font-size: .82rem; }
-.overview-heading { margin-top: 25px; }
-.controls.overview-controls { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; margin-block: 10px 17px; }
+.overview-heading { margin-top: 28px; }
+.controls.overview-controls { background: #ede9e4; border: 0; border-radius: 10px; box-shadow: none; padding: 10px 12px; margin-block: 12px 16px; }
 .overview-controls .reset { background: transparent; }
 .overview-actions { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 15px; }
 .matching-link { display: inline-flex; gap: 6px; align-items: center; padding-block: 4px; color: var(--accent-dark); font-size: .88rem; font-weight: 700; text-underline-offset: 3px; }
 .matching-link span { color: inherit; }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, max(190px, calc((100% - 48px) / 5))), 1fr)); gap: 12px; margin-top: 12px; }
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
 article, .controls, .directory { background: var(--surface); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 2px 7px #23232308; }
-article { padding: 14px; }
-.card-currency { font-size: .84rem; color: var(--muted); letter-spacing: .02em; }
+article { padding: clamp(14px, 1.5vw, 22px); }
+.cards > article:only-child { grid-column: 1 / -1; width: min(100%, 420px); }
+.card-currency { font-size: .84rem; color: var(--accent-dark); letter-spacing: .025em; padding: 4px 8px; border-radius: 6px; background: var(--accent-light); }
 .card-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; }
-.card-heading > span { color: var(--muted); font-size: .75rem; white-space: nowrap; }
-.average { font-size: clamp(1.18rem, 1.55vw, 1.48rem); font-weight: 750; letter-spacing: -.035em; margin: 7px 0 2px; font-variant-numeric: tabular-nums; }
-.salary-range { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; color: var(--muted); font-size: .77rem; }
+.card-heading > span { color: var(--muted); font-size: .8rem; white-space: nowrap; }
+.average-label { color: var(--muted); font-size: .79rem; margin-top: 14px; }
+.average { font-size: clamp(1.2rem, 2.2vw, 1.9rem); font-weight: 750; letter-spacing: -.045em; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.salary-range { margin-top: 13px; border-top: 1px solid var(--line); padding-top: 10px; color: var(--muted); font-size: .77rem; }
 .range-marker { display: block; appearance: none; height: 14px; min-height: 0; margin: 4px 0; padding: 0; border: 0; background: transparent; }
 .range-marker::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: var(--line); }
 .range-marker::-webkit-slider-thumb { appearance: none; width: 10px; height: 10px; margin-top: -3px; border-radius: 50%; background: var(--accent); }
 .range-marker::-moz-range-track { height: 4px; border-radius: 4px; background: var(--line); }
 .range-marker::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 50%; background: var(--accent); }
-.range-endpoints { display: flex; justify-content: space-between; gap: 6px; color: #1a1a1a; font-variant-numeric: tabular-nums; }
+.range-endpoints { display: flex; justify-content: space-between; gap: 6px; font-variant-numeric: tabular-nums; }
+.range-endpoints div { display: grid; gap: 2px; }
+.range-endpoints div:last-child { text-align: right; }
+.range-endpoints strong { font-weight: 650; color: #1a1a1a; }
+@media (min-width: 1080px) {
+  .cards { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .cards > article { grid-column: span 2; }
+  .cards > article:first-child:nth-last-child(5) ~ article:nth-child(4) { grid-column: 2 / span 2; }
+}
+@media (max-width: 370px) {
+  .cards { grid-template-columns: minmax(0, 1fr); }
+}
 .directory-heading { padding: 17px 19px; }
 .table-wrap { position: relative; max-height: clamp(240px, calc(100dvh - 315px), 760px); overflow: auto; }
 table { width: 100%; border-collapse: collapse; white-space: nowrap; text-align: left; font-size: .88rem; }

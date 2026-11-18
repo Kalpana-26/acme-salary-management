@@ -236,15 +236,15 @@ function SalaryWorkspace({ onExpired, view }) {
                     <h3 className="card-currency">{item.currency}</h3>
                     <span>{number.format(item.headcount)} {item.headcount === 1 ? 'employee' : 'employees'}</span>
                   </div>
+                  <p className="average-label">Average annual salary</p>
                   <p className="average">{money(item.average, item.currency, 'symbol')}</p>
-                  <p className="muted">Average annual salary</p>
                   <div className="salary-range">
                     <p>Salary range</p>
                     <input className="range-marker" type="range" min={0} max={100}
                       step="any" value={position} disabled aria-hidden="true" />
                     <div className="range-endpoints">
-                      <span><span className="sr-only">Lowest salary </span>{amountNumber.format(item.minimum / 100)}</span>
-                      <span><span className="sr-only">Highest salary </span>{amountNumber.format(item.maximum / 100)}</span>
+                      <div><span>Low</span><strong>{amountNumber.format(item.minimum / 100)}</strong></div>
+                      <div><span>High</span><strong>{amountNumber.format(item.maximum / 100)}</strong></div>
                     </div>
                   </div>
                 </article>;
