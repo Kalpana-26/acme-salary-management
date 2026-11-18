@@ -13,11 +13,20 @@
 * { box-sizing: border-box; }
 body, h1, h2, h3, p { margin: 0; }
 .wrap { width: min(1344px, calc(100% - 64px)); margin-inline: auto; }
-.masthead { background: #1b1a36; color: white; }
-.masthead-inner { min-height: 70px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-.brand { display: flex; gap: 12px; align-items: center; font-weight: 750; line-height: 1.15; letter-spacing: .06em; }
+.masthead { position: sticky; top: 0; z-index: 1; background: #1b1a36; color: white; }
+.masthead-inner { min-height: 70px; display: flex; align-items: center; gap: 22px; }
+.brand { display: flex; gap: 12px; align-items: center; font-weight: 750; line-height: 1.15; letter-spacing: .06em; color: inherit; text-decoration: none; }
 .brand > span { width: 37px; height: 37px; display: grid; place-items: center; border-radius: 11px; background: #a9a1ff; color: #231b55; font-size: 1.15rem; }
 .brand small { display: block; margin-top: 4px; font-size: .73rem; letter-spacing: 0; font-weight: 500; color: #c5c0e3; }
+.main-nav { display: flex; gap: 4px; margin-left: auto; }
+.main-nav a { display: block; padding: 9px 12px; border-radius: 8px; color: #ece9ff; text-decoration: none; font-size: .85rem; font-weight: 650; }
+.main-nav a:hover, .main-nav a:focus-visible { background: #3b365e; }
+button.logout { min-height: 36px; color: white; background: #302b50; border-color: #5d567e; }
+button.logout:hover:not(:disabled) { color: white; background: #49406f; }
+#dashboard, #directory { scroll-margin-top: 85px; }
+.sign-in { width: min(100%, 430px); margin: clamp(20px, 7vw, 90px) auto; padding: 26px; background: white; border: 1px solid var(--line); border-radius: 13px; }
+.sign-in h1 { font-size: 2rem; }
+.sign-in form { display: grid; gap: 14px; margin-top: 20px; }
 .dataset { display: flex; align-items: center; gap: 8px; font-size: .78rem; font-weight: 650; white-space: nowrap; background: #ede9fc; color: #4c3c89; padding: 8px 11px; border-radius: 20px; }
 .dataset span { width: 7px; height: 7px; border-radius: 50%; background: #6653b9; }
 main { padding-block: 38px 54px; }
@@ -72,8 +81,8 @@ tbody th small { display: block; color: var(--muted); font-weight: 400; margin-t
 td.pay { font-weight: 650; }
 td:last-child { width: 1%; }
 td button { min-height: 33px; padding-block: 4px; color: var(--accent-dark); }
-nav { display: flex; justify-content: end; align-items: center; gap: 12px; padding: 13px 18px; }
-nav span { color: var(--muted); font-size: .86rem; }
+.pagination { display: flex; justify-content: end; align-items: center; gap: 12px; padding: 13px 18px; }
+.pagination span { color: var(--muted); font-size: .86rem; }
 .empty, .error, .success { padding: 13px 16px; }
 .empty { color: var(--muted); border-top: 1px solid var(--line); }
 .error, .success { margin-block: 12px; border-radius: 8px; }
@@ -92,6 +101,10 @@ dialog h3 { margin-bottom: 6px; font-size: 1rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 760px) {
   .wrap { width: calc(100% - 30px); }
+  .masthead-inner { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding-block: 10px; }
+  .main-nav { grid-column: 1 / -1; grid-row: 2; margin-left: 0; }
+  .logout { grid-column: 2; grid-row: 1; }
+  #dashboard, #directory { scroll-margin-top: 115px; }
   main { padding-block: 25px 36px; }
   .page-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
   .controls form { flex-basis: 100%; }
@@ -100,5 +113,5 @@ dialog h3 { margin-bottom: 6px; font-size: 1rem; }
 }
 @media (max-width: 390px) {
   .controls form .field { flex-basis: 130px; }
-  nav { justify-content: space-between; gap: 5px; padding-inline: 10px; }
+  .pagination { justify-content: space-between; gap: 5px; padding-inline: 10px; }
 }

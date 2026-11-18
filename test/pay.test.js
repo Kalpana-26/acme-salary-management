@@ -76,9 +76,18 @@ test('HTTP reviewer gate and salary update work over actual requests', async t =
   t.after(() => new Promise(resolve => server.close(resolve)));
   await once(server, 'listening');
   const base = 'http://127.0.0.1:' + server.address().port;
-  const headers = { Authorization: 'Basic ' + Buffer.from('reviewer:test-password').toString('base64') };
   assert.equal((await fetch(base + '/health')).status, 200);
   assert.equal((await fetch(base + '/api/employees')).status, 401);
+  const login = password => fetch(base + '/api/session', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'reviewer', password }),
+  });
+  assert.equal((await login('wrong')).status, 401);
+  const signedIn = await login('test-password');
+  assert.equal(signedIn.status, 200);
+  const session = signedIn.headers.get('set-cookie');
+  assert.match(session, /HttpOnly; SameSite=Strict/);
+  const headers = { Cookie: session.split(';')[0] };
   assert.equal((await fetch(base + '/api/employees', { headers })).status, 200);
   const patch = body => fetch(base + '/api/employees/1', {
     method: 'PATCH', headers: { ...headers, 'Content-Type': 'application/json' }, body,
@@ -88,4 +97,7 @@ test('HTTP reviewer gate and salary update work over actual requests', async t =
   assert.equal(result.status, 200);
   assert.equal((await result.json()).employee.cents, 7_200_000);
   assert.equal((await patch(JSON.stringify({ amount: '73000', version: 1 }))).status, 409);
+  const signedOut = await fetch(base + '/api/session', { method: 'DELETE', headers });
+  assert.match(signedOut.headers.get('set-cookie'), /Max-Age=0/);
+  assert.equal((await fetch(base + '/api/employees', { headers })).status, 401);
 });

@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { timingSafeEqual, createHash } from 'node:crypto';
+import { timingSafeEqual, createHash, randomBytes } from 'node:crypto';
 import { createReadStream, mkdirSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -35,9 +35,12 @@ async function readJSON(req) {
 
 const digest = (value) => createHash('sha256').update(value).digest();
 const mediaTypes = { js: 'text/javascript', css: 'text/css', html: 'text/html' };
+const sessionLifetime = 8 * 60 * 60;
 
-export function salaryServer(db, { password, dist = resolve('dist') } = {}) {
-  const credential = password && digest('Basic ' + Buffer.from('reviewer:' + password).toString('base64'));
+export function salaryServer(db, { password, secureCookie = false, dist = resolve('dist') } = {}) {
+  const credential = password && digest(password);
+  const sessions = new Map();
+  const cookie = (value, age) => `acme_session=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${secureCookie ? '; Secure' : ''}`;
   return createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -45,9 +48,33 @@ export function salaryServer(db, { password, dist = resolve('dist') } = {}) {
     try {
       const url = new URL(req.url, 'http://localhost');
       if (url.pathname === '/health' && req.method === 'GET') return send(res, 200, { status: 'ok' });
-      if (credential && !timingSafeEqual(digest(req.headers.authorization ?? ''), credential)) {
-        res.setHeader('WWW-Authenticate', 'Basic realm="ACME Salary Review"');
-        return send(res, 401, { error: 'Reviewer sign-in required.' });
+      const token = req.headers.cookie?.match(/(?:^|;\s*)acme_session=([a-f0-9]{64})(?:;|$)/)?.[1];
+      const signedIn = !credential || (sessions.get(token) ?? 0) > Date.now();
+      if (url.pathname === '/api/session' && req.method === 'GET') {
+        return send(res, 200, { signedIn, signInRequired: Boolean(credential) });
+      }
+      if (url.pathname === '/api/session' && req.method === 'POST') {
+        const body = await readJSON(req);
+        if (!credential || body?.username !== 'reviewer' || typeof body?.password !== 'string' ||
+          !timingSafeEqual(digest(body.password), credential)) {
+          throw new InputError('The username or password is incorrect.', 401);
+        }
+        for (const [key, expiry] of sessions) {
+          if (expiry <= Date.now()) sessions.delete(key);
+        }
+        sessions.delete(token);
+        const next = randomBytes(32).toString('hex');
+        sessions.set(next, Date.now() + sessionLifetime * 1000);
+        res.setHeader('Set-Cookie', cookie(next, sessionLifetime));
+        return send(res, 200, { signedIn: true, signInRequired: true });
+      }
+      if (url.pathname === '/api/session' && req.method === 'DELETE') {
+        sessions.delete(token);
+        res.setHeader('Set-Cookie', cookie('', 0));
+        return send(res, 200, { signedIn: !credential, signInRequired: Boolean(credential) });
+      }
+      if (!signedIn && url.pathname.startsWith('/api/')) {
+        throw new InputError('Sign in to continue.', 401);
       }
       if (url.pathname === '/api/employees' && req.method === 'GET') {
         return send(res, 200, directory(db, url.searchParams));
@@ -91,5 +118,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   const db = openDatabase(defaultDatabase);
   seed(db);
   const port = Number(process.env.PORT || 3000);
-  salaryServer(db, { password }).listen(port, host, () => console.log(`ACME salary management listening on ${host}:${port}`));
+  salaryServer(db, { password: password || 'acme-local-demo', secureCookie: process.env.COOKIE_SECURE === '1' })
+    .listen(port, host, () => console.log(`ACME salary management listening on ${host}:${port}`));
 }

@@ -22,13 +22,13 @@ npm run build
 npm start
 ```
 
-Open [http://127.0.0.1:3000](http://127.0.0.1:3000). The first startup creates and seeds `data/acme.sqlite`. You can also run `npm run seed` directly. Restarting or reseeding preserves edits.
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000) and sign in with `reviewer` and `acme-local-demo`. The first startup creates and seeds `data/acme.sqlite`. You can also run `npm run seed` directly. Restarting or reseeding preserves edits.
 
 Run `npm test` to check salary validation, filtered totals, stale edits, audit history, and the HTTP reviewer sign-in.
 
 ## Deploy
 
-Build the included Dockerfile and run one instance on a container host with a persistent volume mounted at `/app/data`. The image listens on port 3000 and provides `GET /health`. Set `REVIEWER_PASSWORD` using the host's secret settings. The browser prompts for username `reviewer` and the configured password. Serve the instance behind an HTTPS endpoint. The sample Compose file binds to loopback for local verification.
+Build the included Dockerfile and run one instance on a container host with a persistent volume mounted at `/app/data`. The image listens on port 3000 and provides `GET /health`. Set `REVIEWER_PASSWORD` using the host's secret settings. Serve the instance over HTTPS and set `COOKIE_SECURE=1`. Reviewers sign in with username `reviewer` and the configured password. Sessions expire after eight hours or when the server restarts. The sample Compose file binds to loopback for local verification.
 
 ```sh
 docker compose up --build -d --wait

@@ -91,7 +91,55 @@ function SalaryEditor({ id, close, onSaved }) {
   </dialog>;
 }
 
-function App() {
+function Masthead({ showNavigation, logout, busy }) {
+  return <header className="masthead"><div className="wrap masthead-inner">
+    <a className="brand" href="/"><span aria-hidden="true">A</span><div>ACME<small>People Operations</small></div></a>
+    {showNavigation && <nav className="main-nav" aria-label="Main navigation">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#directory">Employees</a>
+    </nav>}
+    {logout && <button className="logout" onClick={logout} disabled={busy}>Log out</button>}
+  </div></header>;
+}
+
+function SignIn({ onSignIn }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  async function submit(event) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    setBusy(true);
+    setError('');
+    try {
+      onSignIn(await api('session', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: form.get('username'), password: form.get('password') }),
+      }));
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return <main className="wrap">
+    <section className="sign-in" aria-labelledby="signin-title">
+      <h1 id="signin-title">Sign in</h1>
+      <p className="intro">Access the ACME salary dashboard with your reviewer account.</p>
+      {error && <p className="error" role="alert">{error}</p>}
+      <form onSubmit={submit}>
+        <div className="field"><Label htmlFor="login-username">Username</Label>
+          <input id="login-username" name="username" autoComplete="username" required /></div>
+        <div className="field"><Label htmlFor="login-password">Password</Label>
+          <input id="login-password" name="password" autoComplete="current-password" type="password" required /></div>
+        <button className="primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+      </form>
+    </section>
+  </main>;
+}
+
+function Dashboard({ onExpired }) {
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState({ q: '', country: '', department: '', page: 1 });
   const [filters, setFilters] = useState({ countries: [], departments: [] });
@@ -105,10 +153,11 @@ function App() {
   useEffect(() => {
     const controller = new AbortController();
     api('filters', { signal: controller.signal }).then(setFilters).catch(error => {
-      if (error.name !== 'AbortError') setFilterError(error.message);
+      if (error.status === 401) onExpired();
+      else if (error.name !== 'AbortError') setFilterError(error.message);
     });
     return () => controller.abort();
-  }, []);
+  }, [onExpired]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -117,10 +166,11 @@ function App() {
     api('employees?' + new URLSearchParams(query), { signal: controller.signal })
       .then(data => { setResult(data); setLoading(false); })
       .catch(error => {
-        if (error.name !== 'AbortError') { setError(error.message); setLoading(false); }
+        if (error.status === 401) onExpired();
+        else if (error.name !== 'AbortError') { setError(error.message); setLoading(false); }
       });
     return () => controller.abort();
-  }, [query, revision]);
+  }, [query, revision, onExpired]);
 
   const pages = Math.max(1, Math.ceil((result?.total ?? 0) / (result?.pageSize ?? 25)));
   function filter(event) {
@@ -128,10 +178,7 @@ function App() {
   }
 
   return <>
-    <header className="masthead"><div className="wrap masthead-inner">
-      <div className="brand"><span aria-hidden="true">A</span><div>ACME<small>People Operations</small></div></div>
-    </div></header>
-    <main className="wrap">
+    <main className="wrap" id="dashboard">
       <div className="page-heading">
         <div><h1>Salary management</h1>
           <p className="intro">Review annual base pay and manage employee salary records.</p></div>
@@ -169,8 +216,8 @@ function App() {
               </article>)}
             </div>
           </section>
-          <section className="directory" aria-labelledby="directory">
-            <div className="directory-heading"><h2 id="directory">Employee directory</h2>
+          <section className="directory" id="directory" aria-labelledby="directory-title">
+            <div className="directory-heading"><h2 id="directory-title">Employee directory</h2>
               {result.employees.length > 0 && <span>
                 {number.format((result.page - 1) * result.pageSize + 1)}–{number.format((result.page - 1) * result.pageSize + result.employees.length)} of {number.format(result.total)}
               </span>}
@@ -192,7 +239,7 @@ function App() {
                   </tr>)}</tbody>
                 </table>
               </div>}
-            {pages > 1 && <nav aria-label="Employee pages">
+            {pages > 1 && <nav className="pagination" aria-label="Employee pages">
               <button disabled={query.page === 1} onClick={() => setQuery({ ...query, page: query.page - 1 })}>Previous</button>
               <span>Page {result.page} of {pages}</span>
               <button disabled={query.page >= pages} onClick={() => setQuery({ ...query, page: query.page + 1 })}>Next</button>
@@ -202,6 +249,50 @@ function App() {
     </main>
     {selected !== null && <SalaryEditor id={selected} close={() => setSelected(null)}
       onSaved={() => setRevision(value => value + 1)} />}
+  </>;
+}
+
+function App() {
+  const [session, setSession] = useState(null);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const expireSession = React.useCallback(() => {
+    setSession({ signedIn: false, signInRequired: true });
+  }, []);
+
+  async function loadSession() {
+    setError('');
+    try {
+      setSession(await api('session'));
+    } catch (error) {
+      setError(error.message);
+    }
+  }
+
+  useEffect(() => { loadSession(); }, []);
+
+  async function logout() {
+    setBusy(true);
+    setError('');
+    try {
+      setSession(await api('session', { method: 'DELETE' }));
+      window.scrollTo(0, 0);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return <>
+    <Masthead showNavigation={session?.signedIn}
+      logout={session?.signedIn && session.signInRequired ? logout : null} busy={busy} />
+    {error && <div className="wrap"><p className="error" role="alert">
+      {error} {!session && <button onClick={loadSession}>Retry</button>}
+    </p></div>}
+    {!session && !error && <main className="wrap"><p role="status">Loading…</p></main>}
+    {session?.signedIn && <Dashboard onExpired={expireSession} />}
+    {session && !session.signedIn && <SignIn onSignIn={setSession} />}
   </>;
 }
 

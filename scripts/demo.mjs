@@ -10,7 +10,7 @@ import { seed } from '../server/seed.js';
 
 const db = openDatabase(':memory:');
 seed(db);
-const server = salaryServer(db).listen(0, '127.0.0.1');
+const server = salaryServer(db, { password: 'acme-local-demo' }).listen(0, '127.0.0.1');
 await once(server, 'listening');
 let browser;
 let recordingDir;
@@ -29,7 +29,13 @@ try {
   const seconds = (count = 2) => page.waitForTimeout(count * 1000);
 
   await page.goto(url);
+  await page.getByLabel('Username').fill('reviewer');
+  await page.getByLabel('Password').fill('acme-local-demo');
+  await page.getByRole('button', { name: 'Sign in' }).click();
   await page.getByText('10,000 matching employees').waitFor();
+  await page.getByRole('link', { name: 'Employees' }).click();
+  assert.ok(page.url().endsWith('#directory'));
+  await page.getByRole('link', { name: 'Dashboard' }).click();
   assert.equal(await page.getByRole('row').count(), 26);
   await seconds(3);
   await page.getByRole('button', { name: 'Next', exact: true }).click();
@@ -57,6 +63,10 @@ try {
   await page.getByRole('button', { name: 'Close salary record' }).click();
   await page.getByRole('cell', { name: 'USD 72,000.50' }).waitFor();
   await seconds(3);
+  await page.getByRole('button', { name: 'Log out' }).click();
+  await page.getByRole('heading', { name: 'Sign in' }).waitFor();
+  assert.equal((await page.request.get(url + '/api/employees')).status(), 401);
+  await seconds();
   await context.close();
   const target = output + '/salary-management-demo.webm';
   await rm(target, { force: true });
