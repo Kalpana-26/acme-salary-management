@@ -62,7 +62,7 @@ try {
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await page.getByText('Page 2 of 400').waitFor();
   await seconds();
-  await page.getByRole('searchbox').fill('1');
+  await page.getByRole('searchbox').fill('ACME-0001');
   await page.getByRole('button', { name: 'Search' }).click();
   await page.getByText('1–1 of 1', { exact: true }).waitFor();
   await page.getByRole('link', { name: 'Dashboard' }).click();
@@ -70,7 +70,7 @@ try {
   await page.getByRole('link', { name: 'Employees', exact: true }).click();
   await page.getByText('1–1 of 1', { exact: true }).waitFor();
   await seconds();
-  await page.getByRole('button', { name: /Edit salary for .* #1$/ }).click();
+  await page.getByRole('button', { name: /Edit salary for .* ACME-0001$/ }).click();
   const salary = page.getByLabel('Annual base salary (USD)');
   await salary.fill('72000.50');
   await seconds();

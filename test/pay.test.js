@@ -38,6 +38,7 @@ test('search and combined filters apply equally to the directory and summary', t
   const { employee } = employeeDetail(db, 1);
   const result = directory(db, new URLSearchParams({ q: '1', department: employee.department, country: employee.country }));
   assert.deepEqual(result.employees.map(row => row.id), [1]);
+  assert.deepEqual(directory(db, new URLSearchParams({ q: ' acme-0001 ' })).employees.map(row => row.id), [1]);
   assert.deepEqual({ ...result.summary[0] }, {
     currency: employee.currency, headcount: 1, average: employee.cents,
     minimum: employee.cents, maximum: employee.cents,

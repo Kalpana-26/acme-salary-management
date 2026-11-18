@@ -7,6 +7,7 @@ const money = (cents, currency, currencyDisplay = 'code') => new Intl.NumberForm
   style: 'currency', currency, currencyDisplay,
 }).format(cents / 100);
 const number = new Intl.NumberFormat('en');
+const employeeCode = id => 'ACME-' + String(id).padStart(4, '0');
 const amountNumber = new Intl.NumberFormat('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 async function api(path, options) {
@@ -74,7 +75,7 @@ function SalaryEditor({ id, close, onSaved }) {
     {saved && <p className="success" role="status">Salary saved.</p>}
     {!record && !error && <p role="status">Loading salary record…</p>}
     {record && <>
-      <p className="muted">{record.employee.role} · {record.employee.country} · #{id}</p>
+      <p className="muted">{record.employee.role} · {record.employee.country} · {employeeCode(id)}</p>
       <form onSubmit={submit}>
         <div className="field"><Label htmlFor="salary-amount">Annual base salary ({record.employee.currency})</Label>
           <input id="salary-amount" required inputMode="decimal" value={amount} disabled={busy || stale}
@@ -94,7 +95,7 @@ function SalaryEditor({ id, close, onSaved }) {
 
 function Masthead({ showNavigation, logout, busy, view }) {
   return <header className={showNavigation ? 'masthead sidebar' : 'masthead'}><div className="wrap masthead-inner">
-    <a className="brand" href="/"><span aria-hidden="true">A</span><div>ACME<small>People Operations</small></div></a>
+    <a className="brand" href="/"><span aria-hidden="true">A</span><div><strong className="brand-name">ACME</strong><small>People Operations</small></div></a>
     {showNavigation && <nav className="main-nav" aria-label="Main navigation">
       <a href="#dashboard" aria-current={view === 'dashboard' ? 'page' : undefined}>Dashboard</a>
       <a href="#directory" aria-current={view === 'employees' ? 'page' : undefined}>Employees</a>
@@ -207,7 +208,7 @@ function SalaryWorkspace({ onExpired, view }) {
           setQuery(current => ({ ...current, q: search.trim(), page: 1 }));
         }}>
           <div className="field"><Label htmlFor="employee-search">Employee</Label>
-            <input id="employee-search" type="search" maxLength={100} placeholder="Name or employee ID" value={search}
+            <input id="employee-search" type="search" maxLength={100} placeholder="Name or ACME ID" value={search}
               onChange={event => setSearch(event.target.value)} /></div>
           <button className="primary">Search</button>
         </form>}
@@ -265,11 +266,11 @@ function SalaryWorkspace({ onExpired, view }) {
                   <tbody>{result.employees.map(employee => <tr key={employee.id}>
                     <th scope="row"><div className="person">
                       <span className="initials" aria-hidden="true">{employee.name.split(' ').slice(0, 2).map(part => part[0]).join('')}</span>
-                      <div>{employee.name} <span className="employee-id">#{employee.id}</span><small>{employee.role}</small></div>
+                      <div>{employee.name} <span className="employee-id">· {employeeCode(employee.id)}</span><small>{employee.role}</small></div>
                     </div></th>
                     <td>{employee.department}</td><td>{employee.country}</td>
                     <td className="pay">{money(employee.cents, employee.currency)}</td>
-                    <td><button aria-label={`Edit salary for ${employee.name} #${employee.id}`}
+                    <td><button aria-label={`Edit salary for ${employee.name} ${employeeCode(employee.id)}`}
                       onClick={() => setSelected(employee.id)}>Edit</button></td>
                   </tr>)}</tbody>
                 </table>

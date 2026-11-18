@@ -50,14 +50,16 @@ export function parseSalary(value) {
 
 export function directory(db, params) {
   const search = (params.get('q') ?? '').trim().slice(0, 100);
+  const idMatch = /^(?:ACME-)?(\d+)$/i.exec(search);
+  const searchedId = Number(idMatch?.[1]);
   const page = Number(params.get('page') ?? 1);
   if (!Number.isSafeInteger(page) || page < 1 || page > 1_000_000) {
     throw new InputError('Invalid page.');
   }
   const country = params.get('country') ?? '';
   const department = params.get('department') ?? '';
-  const args = [search, search, country, country, department, department];
-  const where = `WHERE (instr(lower(name), lower(?)) > 0 OR CAST(id AS TEXT) = ?)
+  const args = [search, Number.isSafeInteger(searchedId) ? searchedId : null, country, country, department, department];
+  const where = `WHERE (instr(lower(name), lower(?)) > 0 OR id = ?)
     AND (? = '' OR country = ?) AND (? = '' OR department = ?)`;
   const pageSize = 25;
   db.exec('BEGIN');
