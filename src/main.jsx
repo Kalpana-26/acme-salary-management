@@ -145,11 +145,16 @@ function SalaryWorkspace({ onExpired, view }) {
   const [query, setQuery] = useState({ q: '', country: '', department: '', page: 1 });
   const [filters, setFilters] = useState({ countries: [], departments: [] });
   const [result, setResult] = useState(null);
+  const [settledQuery, setSettledQuery] = useState('');
   const [error, setError] = useState('');
   const [filterError, setFilterError] = useState('');
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [revision, setRevision] = useState(0);
+  const overview = view === 'dashboard';
+  const params = overview ? { country: query.country, department: query.department } : query;
+  const requestPath = 'employees?' + new URLSearchParams(params);
+  const pending = loading || settledQuery !== requestPath;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -164,17 +169,17 @@ function SalaryWorkspace({ onExpired, view }) {
     const controller = new AbortController();
     setLoading(true);
     setError('');
-    api('employees?' + new URLSearchParams(query), { signal: controller.signal })
-      .then(data => { setResult(data); setLoading(false); })
+    api(requestPath, { signal: controller.signal })
+      .then(data => { setResult(data); setSettledQuery(requestPath); setLoading(false); })
       .catch(error => {
         if (error.status === 401) onExpired();
-        else if (error.name !== 'AbortError') { setError(error.message); setLoading(false); }
+        else if (error.name !== 'AbortError') { setError(error.message); setSettledQuery(requestPath); setLoading(false); }
       });
     return () => controller.abort();
-  }, [query, revision, onExpired]);
+  }, [requestPath, revision, onExpired]);
 
   const pages = Math.max(1, Math.ceil((result?.total ?? 0) / (result?.pageSize ?? 25)));
-  const overview = view === 'dashboard';
+  const filtersActive = query.country || query.department;
   function filter(event) {
     setQuery(current => ({ ...current, [event.target.name]: event.target.value, page: 1 }));
   }
@@ -186,8 +191,12 @@ function SalaryWorkspace({ onExpired, view }) {
           <p className="intro">{overview ? 'Review gross annual base pay by currency.' : 'Find employees, edit salaries, and review changes.'}</p></div>
         <div className="dataset"><span aria-hidden="true" /> Fictional employee data</div>
       </div>
-      <section className="controls" aria-label="Employee filters">
-        <form onSubmit={event => {
+      {overview && <div className="section-heading overview-heading">
+        <h2 id="overview">Pay overview</h2>
+        {!pending && !error && result && <span>{number.format(result.total)} matching {result.total === 1 ? 'employee' : 'employees'}</span>}
+      </div>}
+      <section className={overview ? 'controls overview-controls' : 'controls'} aria-label={overview ? 'Pay overview filters' : 'Employee filters'}>
+        {!overview && <form onSubmit={event => {
           event.preventDefault();
           setQuery(current => ({ ...current, q: search.trim(), page: 1 }));
         }}>
@@ -195,21 +204,23 @@ function SalaryWorkspace({ onExpired, view }) {
             <input id="employee-search" type="search" maxLength={100} placeholder="Name or employee ID" value={search}
               onChange={event => setSearch(event.target.value)} /></div>
           <button className="primary">Search</button>
-        </form>
+        </form>}
         <div className="field"><Label htmlFor="country-filter">Country</Label><select id="country-filter" name="country" value={query.country} onChange={filter}>
           <option value="">All countries</option>{filters.countries.map(value => <option key={value}>{value}</option>)}
         </select></div>
         <div className="field"><Label htmlFor="department-filter">Department</Label><select id="department-filter" name="department" value={query.department} onChange={filter}>
           <option value="">All departments</option>{filters.departments.map(value => <option key={value}>{value}</option>)}
         </select></div>
-        <button className="reset" onClick={() => { setSearch(''); setQuery({ q: '', country: '', department: '', page: 1 }); }}>Reset filters</button>
+        {(filtersActive || (!overview && (search || query.q))) && <button className="reset" onClick={() => {
+          if (!overview) setSearch('');
+          setQuery(current => ({ q: overview ? current.q : '', country: '', department: '', page: 1 }));
+        }}>Clear filters</button>}
       </section>
       {filterError && <p className="error" role="alert">Filters could not load. {filterError}</p>}
-      {loading ? <p role="status">Loading salary data…</p> : error ?
+      {pending ? <p role="status">Loading salary data…</p> : error ?
         <p className="error" role="alert">{error} <button onClick={() => setRevision(value => value + 1)}>Retry</button></p> :
         result && (overview ?
           <section aria-labelledby="overview">
-            <div className="section-heading"><h2 id="overview">Pay overview</h2><span>{number.format(result.total)} matching {result.total === 1 ? 'employee' : 'employees'}</span></div>
             {result.summary.length === 0 ? <p className="empty">No employees match your filters.</p> : <div className="cards">
               {result.summary.map(item => <article key={item.currency}>
                 <h3 className="card-currency">{item.currency}</h3>
@@ -219,6 +230,10 @@ function SalaryWorkspace({ onExpired, view }) {
                   <dt>Highest</dt><dd>{amountNumber.format(item.maximum / 100)}</dd></dl>
               </article>)}
             </div>}
+            {result.total > 0 && <a className="matching-link" href="#directory" onClick={() => {
+              setSearch('');
+              setQuery(current => ({ ...current, q: '', page: 1 }));
+            }}>View matching employees <span aria-hidden="true">→</span></a>}
           </section> :
           <section className="directory" aria-labelledby="directory-title">
             <div className="directory-heading"><h2 id="directory-title">Salary records</h2>

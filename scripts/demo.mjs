@@ -35,12 +35,14 @@ try {
   await page.getByText('10,000 matching employees').waitFor();
   assert.equal(await page.getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current'), 'page');
   assert.equal(await page.getByRole('row').count(), 0);
+  assert.equal(await page.getByRole('searchbox').count(), 0);
+  assert.equal(await page.getByRole('button', { name: 'Clear filters' }).count(), 0);
   await seconds(3);
   await page.getByLabel('Country', { exact: true }).selectOption('India');
   await page.getByText('2,000 matching employees').waitFor();
   await page.getByLabel('Department', { exact: true }).selectOption('Engineering');
   await seconds(3);
-  await page.getByRole('link', { name: 'Employees' }).click();
+  await page.getByRole('link', { name: 'View matching employees' }).click();
   await page.getByRole('heading', { name: 'Employee directory' }).waitFor();
   assert.ok(page.url().endsWith('#directory'));
   assert.equal(await page.getByRole('link', { name: 'Employees' }).getAttribute('aria-current'), 'page');
@@ -49,7 +51,7 @@ try {
   assert.equal(await page.getByRole('heading', { name: 'Pay overview' }).count(), 0);
   await page.getByRole('button', { name: 'Edit salary', exact: false }).first().waitFor();
   await seconds();
-  await page.getByRole('button', { name: 'Reset filters' }).click();
+  await page.getByRole('button', { name: 'Clear filters' }).click();
   await page.getByText('Page 1 of 400').waitFor();
   assert.equal(await page.getByRole('row').count(), 26);
   await page.getByRole('button', { name: 'Next', exact: true }).click();
@@ -57,6 +59,10 @@ try {
   await seconds();
   await page.getByRole('searchbox').fill('1');
   await page.getByRole('button', { name: 'Search' }).click();
+  await page.getByText('1–1 of 1', { exact: true }).waitFor();
+  await page.getByRole('link', { name: 'Dashboard' }).click();
+  await page.getByText('10,000 matching employees').waitFor();
+  await page.getByRole('link', { name: 'Employees', exact: true }).click();
   await page.getByText('1–1 of 1', { exact: true }).waitFor();
   await seconds();
   await page.getByRole('button', { name: /Edit salary for .* #1$/ }).click();

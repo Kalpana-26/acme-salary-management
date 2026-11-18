@@ -7,7 +7,7 @@ An HR manager can use this app to answer questions like “What is the average b
 ## Try the HR workflow
 
 1. Choose **India** and **Engineering**. The pay overview shows the number of employees and their average, minimum, and maximum annual base pay in INR.
-2. Open **Employees**. The filters carry over from the dashboard. Select **Reset filters**, search for employee ID `1`, and open **Edit**.
+2. Select **View matching employees** to open the directory with those filters. Select **Clear filters**, search for employee ID `1`, and open **Edit**.
 3. Enter a new salary and save. The change history shows the previous amount, the new amount, and when it changed. Close the record to see the updated salary in the directory.
 
 The pay overview covers everyone who matches the filters, including employees on later pages.
