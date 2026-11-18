@@ -1,6 +1,6 @@
 # Design and development notes
 
-## Architecture
+## Why this setup fits the assessment
 
 ```text
 React browser UI --> same-origin HTTP API --> SQLite on a persistent volume
@@ -8,12 +8,15 @@ React browser UI --> same-origin HTTP API --> SQLite on a persistent volume
                           +--> production React assets
 ```
 
-- The API keeps the directory and aggregate calculations in SQL. Both queries use the same predicate and run in a single read transaction so headcount and page rows reflect the same snapshot.
-- Salaries are persisted as integer minor units. Decimal strings are validated before conversion. The supported currencies all use two decimal places. Average values are rounded to the nearest minor unit for display.
-- Updates carry the version that the user opened. A write transaction acquires the SQLite writer lock, checks that version, and writes the salary and its history together. Repeating the current amount preserves the existing version and history.
-- At 10,000 employees, offset pagination with 25 rows per page and a bounded scan for substring search and pay statistics keeps the implementation small. The name index supports stable ordering, and the history index supports per-employee lookup. Revisit full-text indexing or aggregate materialization if production measurements warrant it.
-- The assessment uses synthetic records and a shared reviewer credential for remote access. An ACME rollout would require organization identity and access policies and an audit actor on each edit.
+SQLite keeps the directory, salary history, and reporting queries in one database. A single Node process serves both the API and the React build. The deployment needs one persistent volume for the database.
+
+- **Keep the overview consistent with the directory.** Both SQL queries share the same filters and run in one read transaction. The browser receives 25 rows at a time, while the overview covers all matches. The seeded dataset exercises the full 10,000-row case in tests.
+- **Store pay exactly.** The API validates decimal input and stores integer minor units. A salary such as `72000.50` is stored as `7200050`. Only the displayed average needs rounding.
+- **Handle two editors opening the same record.** Each save includes the version the editor opened. SQLite checks that version inside the write transaction and saves the new amount and history entry together. A test forces the history write to fail and verifies that the salary stays at its original amount.
+- **Keep the demo simple to run.** The seed is deterministic and can be rerun without losing salary changes. A rollout with real employee data would need organization sign-in, role-based access, and an identified actor on each audit entry.
 
 ## AI workflow
 
-Codex used the supplied assessment as the brief. The implementation sequence was requirements, schema and seed, HTTP API and React UI, tests, then deployment packaging and browser recording. Important checks included lossless money parsing, shared filters between analytics and the directory, preserving edits on reseed, stale-write rejection, and rollback when history insertion fails. Automated tests exercise an in-memory SQLite database and a loopback HTTP server. The Playwright walkthrough uses the production build against the actual HTTP and SQLite layers.
+Codex assisted with scoping, implementation, tests, and the demo recording. The initial brief was the assessment prompt, and the Git history starts with the one-page requirements before the implementation commits.
+
+During the first browser walkthrough, Playwright timed out trying to locate the country filter by its accessible label. Explicitly associating the labels with the filters and salary input resolved the issue. The recorded rerun exercises the built React app, HTTP API, and SQLite database together.

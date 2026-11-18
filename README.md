@@ -1,6 +1,16 @@
 # ACME salary management
 
-A React application for reviewing and editing annual base pay for 10,000 fictional employees. See [the one-page requirements](REQUIREMENTS.md), [design and AI workflow notes](DESIGN.md), and [the recorded walkthrough](artifacts/salary-management-demo.webm).
+An HR manager can use this app to answer questions like “What is the average base salary for Engineering in India?” and “When did this employee’s salary last change?” The app comes with 10,000 fictional employees across five countries.
+
+[Watch the demo](artifacts/salary-management-demo.webm) · [Read the one-page requirements](REQUIREMENTS.md) · [See the design decisions and AI workflow](DESIGN.md)
+
+## Try the HR workflow
+
+1. Choose **India** and **Engineering**. The pay overview shows the number of employees and their average, minimum, and maximum annual base pay in INR.
+2. Select **Reset filters**, search for employee ID `1`, and open **Edit**.
+3. Enter a new salary and save. The change history shows the previous amount, the new amount, and when it changed. Close the record to see the updated salary in the directory.
+
+The pay overview covers everyone who matches the filters, including employees on later pages.
 
 ## Run locally
 
@@ -8,15 +18,13 @@ Requires Node.js 24 and npm. From the repository root:
 
 ```sh
 npm ci
-npm test
 npm run build
-npm run seed
 npm start
 ```
 
-Open [http://127.0.0.1:3000](http://127.0.0.1:3000). The server also seeds on startup. Both seed paths are idempotent and preserve salary edits. The database defaults to `data/acme.sqlite`.
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000). The first startup creates and seeds `data/acme.sqlite`. You can also run `npm run seed` directly. Restarting or reseeding preserves edits.
 
-Search by name or ID, narrow results by country and department, and review pay statistics by currency. Use **Edit** to change an employee's salary and see its history. Try searching for ID `1`.
+Run `npm test` to check salary validation, filtered totals, stale edits, audit history, and the HTTP reviewer sign-in.
 
 ## Deploy
 
