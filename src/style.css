@@ -60,24 +60,31 @@ button.reset { border-color: transparent; color: var(--accent-dark); }
 .matching-link { display: inline-flex; gap: 6px; align-items: center; padding-block: 4px; color: var(--accent-dark); font-size: .88rem; font-weight: 700; text-underline-offset: 3px; }
 .matching-link span { color: inherit; }
 .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
-article, .controls, .directory { background: var(--surface); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 2px 7px #23232308; }
-article { padding: clamp(14px, 1.5vw, 22px); }
+.controls, .directory { background: var(--surface); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 2px 7px #23232308; }
+.cards > article {
+  padding: clamp(14px, 1.8vw, 25px);
+  border: 1px solid #303030;
+  border-radius: 23px;
+  background: linear-gradient(150deg, #292521, #1a1a1a 70%);
+  color: #fff;
+  box-shadow: 0 6px 16px #1a1a1a19;
+}
 .cards > article:only-child { grid-column: 1 / -1; width: min(100%, 420px); }
-.card-currency { font-size: .84rem; color: var(--accent-dark); letter-spacing: .025em; padding: 4px 8px; border-radius: 6px; background: var(--accent-light); }
+.card-currency { font-size: .8rem; color: #ffac70; letter-spacing: .05em; padding: 5px 8px; border-radius: 8px; background: #443024; }
 .card-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; }
-.card-heading > span { color: var(--muted); font-size: .8rem; white-space: nowrap; }
-.average-label { color: var(--muted); font-size: .79rem; margin-top: 14px; }
-.average { font-size: clamp(1.2rem, 2.2vw, 1.9rem); font-weight: 750; letter-spacing: -.045em; margin-top: 3px; font-variant-numeric: tabular-nums; }
-.salary-range { margin-top: 13px; border-top: 1px solid var(--line); padding-top: 10px; color: var(--muted); font-size: .77rem; }
+.card-heading > span { color: #ded8d3; font-size: .8rem; white-space: nowrap; }
+.average-label { color: #ded8d3; font-size: .79rem; margin-top: 15px; }
+.average { font-size: clamp(1.2rem, 2.6vw, 2.15rem); line-height: 1.15; font-weight: 750; letter-spacing: -.045em; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.salary-range { margin-top: 16px; border-top: 1px solid #49433e; padding-top: 12px; color: #ded8d3; font-size: .77rem; }
 .range-marker { display: block; appearance: none; height: 14px; min-height: 0; margin: 4px 0; padding: 0; border: 0; background: transparent; }
-.range-marker::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: var(--line); }
-.range-marker::-webkit-slider-thumb { appearance: none; width: 10px; height: 10px; margin-top: -3px; border-radius: 50%; background: var(--accent); }
-.range-marker::-moz-range-track { height: 4px; border-radius: 4px; background: var(--line); }
-.range-marker::-moz-range-thumb { width: 10px; height: 10px; border: 0; border-radius: 50%; background: var(--accent); }
+.range-marker::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: #6c625b; }
+.range-marker::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; margin-top: -4px; border-radius: 50%; background: var(--accent); }
+.range-marker::-moz-range-track { height: 4px; border-radius: 4px; background: #6c625b; }
+.range-marker::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: var(--accent); }
 .range-endpoints { display: flex; justify-content: space-between; gap: 6px; font-variant-numeric: tabular-nums; }
 .range-endpoints div { display: grid; gap: 2px; }
 .range-endpoints div:last-child { text-align: right; }
-.range-endpoints strong { font-weight: 650; color: #1a1a1a; }
+.range-endpoints strong { font-weight: 650; color: #fff; }
 @media (min-width: 1080px) {
   .cards { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .cards > article { grid-column: span 2; }

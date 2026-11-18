@@ -36,6 +36,8 @@ try {
   const canadianPay = page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'CAD' }) });
   await canadianPay.getByText('CA$117,688.23', { exact: true }).waitFor();
   await canadianPay.getByText('Salary range', { exact: true }).waitFor();
+  const euroPay = page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'EUR' }) });
+  await euroPay.getByText('€75,933.65', { exact: true }).waitFor();
   assert.equal(await page.getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current'), 'page');
   assert.equal(await page.getByRole('row').count(), 0);
   assert.equal(await page.getByRole('searchbox').count(), 0);
