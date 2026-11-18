@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { Root as Label } from '@radix-ui/react-label';
 import './style.css';
 
-const money = (cents, currency) => new Intl.NumberFormat('en', {
-  style: 'currency', currency, currencyDisplay: 'code',
+const money = (cents, currency, currencyDisplay = 'code') => new Intl.NumberFormat('en', {
+  style: 'currency', currency, currencyDisplay,
 }).format(cents / 100);
 const number = new Intl.NumberFormat('en');
 const amountNumber = new Intl.NumberFormat('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -193,7 +193,13 @@ function SalaryWorkspace({ onExpired, view }) {
       </div>
       {overview && <div className="section-heading overview-heading">
         <h2 id="overview">Pay overview</h2>
-        {!pending && !error && result && <span>{number.format(result.total)} matching {result.total === 1 ? 'employee' : 'employees'}</span>}
+        {!pending && !error && result && <div className="overview-actions">
+          <span>{number.format(result.total)} matching {result.total === 1 ? 'employee' : 'employees'}</span>
+          {result.total > 0 && <a className="matching-link" href="#directory" onClick={() => {
+            setSearch('');
+            setQuery(current => ({ ...current, q: '', page: 1 }));
+          }}>View matching employees <span aria-hidden="true">→</span></a>}
+        </div>}
       </div>}
       <section className={overview ? 'controls overview-controls' : 'controls'} aria-label={overview ? 'Pay overview filters' : 'Employee filters'}>
         {!overview && <form onSubmit={event => {
@@ -222,18 +228,28 @@ function SalaryWorkspace({ onExpired, view }) {
         result && (overview ?
           <section aria-labelledby="overview">
             {result.summary.length === 0 ? <p className="empty">No employees match your filters.</p> : <div className="cards">
-              {result.summary.map(item => <article key={item.currency}>
-                <h3 className="card-currency">{item.currency}</h3>
-                <p className="average">{amountNumber.format(item.average / 100)}</p><p className="muted">Average annual salary</p>
-                <dl><dt>Employees</dt><dd>{number.format(item.headcount)}</dd>
-                  <dt>Lowest</dt><dd>{amountNumber.format(item.minimum / 100)}</dd>
-                  <dt>Highest</dt><dd>{amountNumber.format(item.maximum / 100)}</dd></dl>
-              </article>)}
+              {result.summary.map(item => {
+                const spread = item.maximum - item.minimum;
+                const position = spread ? (item.average - item.minimum) / spread * 100 : 50;
+                return <article key={item.currency}>
+                  <div className="card-heading">
+                    <h3 className="card-currency">{item.currency}</h3>
+                    <span>{number.format(item.headcount)} {item.headcount === 1 ? 'employee' : 'employees'}</span>
+                  </div>
+                  <p className="average">{money(item.average, item.currency, 'symbol')}</p>
+                  <p className="muted">Average annual salary</p>
+                  <div className="salary-range">
+                    <p>Salary range</p>
+                    <input className="range-marker" type="range" min={0} max={100}
+                      step="any" value={position} disabled aria-hidden="true" />
+                    <div className="range-endpoints">
+                      <span><span className="sr-only">Lowest salary </span>{amountNumber.format(item.minimum / 100)}</span>
+                      <span><span className="sr-only">Highest salary </span>{amountNumber.format(item.maximum / 100)}</span>
+                    </div>
+                  </div>
+                </article>;
+              })}
             </div>}
-            {result.total > 0 && <a className="matching-link" href="#directory" onClick={() => {
-              setSearch('');
-              setQuery(current => ({ ...current, q: '', page: 1 }));
-            }}>View matching employees <span aria-hidden="true">→</span></a>}
           </section> :
           <section className="directory" aria-labelledby="directory-title">
             <div className="directory-heading"><h2 id="directory-title">Salary records</h2>

@@ -33,6 +33,9 @@ try {
   await page.getByLabel('Password').fill('acme-local-demo');
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.getByText('10,000 matching employees').waitFor();
+  const canadianPay = page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'CAD' }) });
+  await canadianPay.getByText('CA$117,688.23', { exact: true }).waitFor();
+  await canadianPay.getByText('Salary range', { exact: true }).waitFor();
   assert.equal(await page.getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current'), 'page');
   assert.equal(await page.getByRole('row').count(), 0);
   assert.equal(await page.getByRole('searchbox').count(), 0);
