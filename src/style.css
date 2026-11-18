@@ -60,6 +60,22 @@ button.reset { border-color: transparent; color: var(--accent-dark); }
 .overview-actions { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 15px; }
 .matching-link { display: inline-flex; gap: 6px; align-items: center; padding-block: 4px; color: var(--accent-dark); font-size: .88rem; font-weight: 700; text-underline-offset: 3px; }
 .matching-link span { color: inherit; }
+.pay-chart { padding: clamp(14px, 2vw, 24px); border: 1px solid var(--line); border-radius: 15px; background: var(--surface); }
+.pay-chart-heading { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 10px 20px; }
+.pay-chart-heading h3 { font-size: 1.08rem; margin-bottom: 5px; }
+.pay-chart-heading .field { width: 130px; }
+.pay-chart-heading select { min-height: 36px; }
+.pay-bars { display: grid; gap: 14px; margin: 20px 0 0; padding: 0; list-style: none; }
+.pay-bars li { display: grid; grid-template-columns: 62px minmax(0, 1fr) minmax(125px, auto); align-items: center; gap: 12px; font-size: .85rem; }
+.pay-bars strong { text-align: right; font-variant-numeric: tabular-nums; }
+.pay-bars progress { display: block; appearance: none; width: 100%; height: 12px; overflow: hidden; border: 0; border-radius: 8px; background: #eee9e4; color: var(--accent); }
+.pay-bars progress::-webkit-progress-bar { background: #eee9e4; }
+.pay-bars progress::-webkit-progress-value { border-radius: 8px; background: var(--accent); }
+.pay-bars progress::-moz-progress-bar { border-radius: 8px; background: var(--accent); }
+@media (max-width: 520px) {
+  .pay-bars li { grid-template-columns: 1fr auto; gap: 6px 12px; }
+  .pay-bars progress { grid-column: 1 / -1; grid-row: 2; }
+}
 .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
 .controls, .directory { background: var(--surface); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 2px 7px #23232308; }
 .cards > article {

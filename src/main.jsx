@@ -141,6 +141,34 @@ function SignIn({ onSignIn }) {
   </main>;
 }
 
+function PayChart({ summary, selectedCurrency, onCurrencyChange }) {
+  const selected = summary.find(item => item.currency === selectedCurrency) ?? summary[0];
+  const measures = [
+    ['Lowest', selected.minimum],
+    ['Average', selected.average],
+    ['Highest', selected.maximum],
+  ];
+
+  return <section className="pay-chart" aria-labelledby="pay-chart-title">
+    <div className="pay-chart-heading">
+      <div><h3 id="pay-chart-title">Annual base pay</h3>
+        <p className="muted">{number.format(selected.headcount)} {selected.headcount === 1 ? 'employee' : 'employees'} paid in {selected.currency}</p></div>
+      <div className="field"><Label htmlFor="chart-currency">Chart currency</Label>
+        <select id="chart-currency" value={selected.currency} onChange={event => onCurrencyChange(event.target.value)}>
+          {summary.map(item => <option key={item.currency}>{item.currency}</option>)}
+        </select>
+      </div>
+    </div>
+    <ul className="pay-bars">
+      {measures.map(([label, cents]) => <li key={label}>
+        <span>{label}</span>
+        <progress aria-hidden="true" value={cents} max={selected.maximum} />
+        <strong>{money(cents, selected.currency, 'symbol')}</strong>
+      </li>)}
+    </ul>
+  </section>;
+}
+
 function SalaryWorkspace({ onExpired, view }) {
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState({ q: '', country: '', department: '', page: 1 });
@@ -152,6 +180,7 @@ function SalaryWorkspace({ onExpired, view }) {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [revision, setRevision] = useState(0);
+  const [chartCurrency, setChartCurrency] = useState('');
   const overview = view === 'dashboard';
   const params = overview ? { country: query.country, department: query.department } : query;
   const requestPath = 'employees?' + new URLSearchParams(params);
@@ -228,6 +257,8 @@ function SalaryWorkspace({ onExpired, view }) {
         <p className="error" role="alert">{error} <button onClick={() => setRevision(value => value + 1)}>Retry</button></p> :
         result && (overview ?
           <section aria-labelledby="overview">
+            {result.summary.length > 0 && <PayChart summary={result.summary} selectedCurrency={chartCurrency}
+              onCurrencyChange={setChartCurrency} />}
             {result.summary.length === 0 ? <p className="empty">No employees match your filters.</p> : <div className="cards">
               {result.summary.map(item => {
                 const spread = item.maximum - item.minimum;

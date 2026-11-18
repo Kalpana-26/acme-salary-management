@@ -38,6 +38,9 @@ try {
   await canadianPay.getByText('Salary range', { exact: true }).waitFor();
   const euroPay = page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'EUR' }) });
   await euroPay.getByText('€75,933.65', { exact: true }).waitFor();
+  const chart = page.getByRole('region', { name: 'Annual base pay' });
+  await chart.getByLabel('Chart currency').selectOption('EUR');
+  await chart.getByText('€75,933.65', { exact: true }).waitFor();
   assert.equal(await page.getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current'), 'page');
   assert.equal(await page.getByRole('row').count(), 0);
   assert.equal(await page.getByRole('searchbox').count(), 0);
@@ -45,6 +48,7 @@ try {
   await seconds(3);
   await page.getByLabel('Country', { exact: true }).selectOption('India');
   await page.getByText('2,000 matching employees').waitFor();
+  assert.equal(await chart.getByLabel('Chart currency').inputValue(), 'INR');
   await page.getByLabel('Department', { exact: true }).selectOption('Engineering');
   await seconds(3);
   await page.getByRole('link', { name: 'View matching employees' }).click();
