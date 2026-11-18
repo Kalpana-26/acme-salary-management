@@ -128,10 +128,15 @@ function App() {
   }
 
   return <>
-    <header><div className="wrap brand"><span aria-hidden="true">A</span> ACME <small>People Operations</small></div></header>
+    <header className="masthead"><div className="wrap masthead-inner">
+      <div className="brand"><span aria-hidden="true">A</span><div>ACME<small>People Operations</small></div></div>
+    </div></header>
     <main className="wrap">
-      <h1>Salary management</h1>
-      <p className="intro">Review annual base pay and manage employee salary records.</p>
+      <div className="page-heading">
+        <div><h1>Salary management</h1>
+          <p className="intro">Review annual base pay and manage employee salary records.</p></div>
+        <div className="dataset"><span aria-hidden="true" /> Fictional employee data</div>
+      </div>
       <section className="controls" aria-label="Employee filters">
         <form onSubmit={event => {
           event.preventDefault();
@@ -148,7 +153,7 @@ function App() {
         <div className="field"><Label htmlFor="department-filter">Department</Label><select id="department-filter" name="department" value={query.department} onChange={filter}>
           <option value="">All departments</option>{filters.departments.map(value => <option key={value}>{value}</option>)}
         </select></div>
-        <button onClick={() => { setSearch(''); setQuery({ q: '', country: '', department: '', page: 1 }); }}>Reset filters</button>
+        <button className="reset" onClick={() => { setSearch(''); setQuery({ q: '', country: '', department: '', page: 1 }); }}>Reset filters</button>
       </section>
       {filterError && <p className="error" role="alert">Filters could not load. {filterError}</p>}
       {loading ? <p role="status">Loading salary data…</p> : error ?
@@ -160,19 +165,26 @@ function App() {
               {result.summary.map(item => <article key={item.currency}>
                 <div className="card-label"><strong>{item.currency}</strong><span>{number.format(item.headcount)} employees</span></div>
                 <p className="average">{money(item.average, item.currency)}</p><p className="muted">Average annual salary</p>
-                <dl><dt>Min</dt><dd>{money(item.minimum, item.currency)}</dd><dt>Max</dt><dd>{money(item.maximum, item.currency)}</dd></dl>
+                <dl><dt>Lowest</dt><dd>{money(item.minimum, item.currency)}</dd><dt>Highest</dt><dd>{money(item.maximum, item.currency)}</dd></dl>
               </article>)}
             </div>
           </section>
-          <section aria-labelledby="directory">
-            <h2 id="directory">Employee directory</h2>
+          <section className="directory" aria-labelledby="directory">
+            <div className="directory-heading"><h2 id="directory">Employee directory</h2>
+              {result.employees.length > 0 && <span>
+                {number.format((result.page - 1) * result.pageSize + 1)}–{number.format((result.page - 1) * result.pageSize + result.employees.length)} of {number.format(result.total)}
+              </span>}
+            </div>
             {result.employees.length === 0 ? <p className="empty">No employees match your filters.</p> :
               <div className="table-wrap" tabIndex={0} aria-label="Scrollable employee directory">
                 <table>
                   <thead><tr><th scope="col">Employee</th><th scope="col">Department</th><th scope="col">Country</th>
                     <th scope="col" className="pay">Annual base pay</th><th scope="col"><span className="sr-only">Action</span></th></tr></thead>
                   <tbody>{result.employees.map(employee => <tr key={employee.id}>
-                    <th scope="row">{employee.name} <span className="muted">#{employee.id}</span><small>{employee.role}</small></th>
+                    <th scope="row"><div className="person">
+                      <span className="initials" aria-hidden="true">{employee.name.split(' ').slice(0, 2).map(part => part[0]).join('')}</span>
+                      <div>{employee.name} <span className="employee-id">#{employee.id}</span><small>{employee.role}</small></div>
+                    </div></th>
                     <td>{employee.department}</td><td>{employee.country}</td>
                     <td className="pay">{money(employee.cents, employee.currency)}</td>
                     <td><button aria-label={`Edit salary for ${employee.name} #${employee.id}`}
