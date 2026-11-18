@@ -29,7 +29,7 @@ try {
   const seconds = (count = 2) => page.waitForTimeout(count * 1000);
 
   await page.goto(url);
-  await page.getByLabel('Username').fill('reviewer');
+  await page.getByLabel('Username').fill('admin');
   await page.getByLabel('Password').fill('acme-local-demo');
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.getByText('10,000 matching employees').waitFor();

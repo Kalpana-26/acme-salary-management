@@ -55,7 +55,7 @@ export function salaryServer(db, { password, secureCookie = false, dist = resolv
       }
       if (url.pathname === '/api/session' && req.method === 'POST') {
         const body = await readJSON(req);
-        if (!credential || body?.username !== 'reviewer' || typeof body?.password !== 'string' ||
+        if (!credential || body?.username !== 'admin' || typeof body?.password !== 'string' ||
           !timingSafeEqual(digest(body.password), credential)) {
           throw new InputError('The username or password is incorrect.', 401);
         }

@@ -127,7 +127,7 @@ function SignIn({ onSignIn }) {
   return <main className="wrap">
     <section className="sign-in" aria-labelledby="signin-title">
       <h1 id="signin-title">Sign in</h1>
-      <p className="intro">Access the ACME salary dashboard with your reviewer account.</p>
+      <p className="intro">Sign in to access the ACME salary dashboard.</p>
       {error && <p className="error" role="alert">{error}</p>}
       <form onSubmit={submit}>
         <div className="field"><Label htmlFor="login-username">Username</Label>

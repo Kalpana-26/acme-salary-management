@@ -78,11 +78,12 @@ test('HTTP reviewer gate and salary update work over actual requests', async t =
   const base = 'http://127.0.0.1:' + server.address().port;
   assert.equal((await fetch(base + '/health')).status, 200);
   assert.equal((await fetch(base + '/api/employees')).status, 401);
-  const login = password => fetch(base + '/api/session', {
+  const login = (password, username = 'admin') => fetch(base + '/api/session', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: 'reviewer', password }),
+    body: JSON.stringify({ username, password }),
   });
   assert.equal((await login('wrong')).status, 401);
+  assert.equal((await login('test-password', 'reviewer')).status, 401);
   const signedIn = await login('test-password');
   assert.equal(signedIn.status, 200);
   const session = signedIn.headers.get('set-cookie');
