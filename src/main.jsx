@@ -375,13 +375,11 @@ function SalaryWorkspace({ onExpired, view }) {
                 if (selectedPay.currency !== currency) setFocus(null);
                 setChartCurrency(currency);
               }} />
-              <div className={focus ? 'analysis-selection has-selection' : 'analysis-selection'} aria-live="polite">
-                {focus ? <>
+              {focus && <div className="analysis-selection has-selection" aria-live="polite">
                   <div><strong>{focus.label}</strong><p className="muted">{number.format(focus.count)} {focus.count === 1 ? 'employee' : 'employees'} in this selection</p></div>
                   <a className="matching-link" href="#directory" onClick={() => openDirectory(focus)}>Open selected employees <span aria-hidden="true">→</span></a>
                   <button className="reset" onClick={() => setFocus(null)}>Clear selection</button>
-                </> : <p className="muted">Select a department column or salary band to open the employees behind it.</p>}
-              </div>
+              </div>}
               <div className="dashboard-feature">
                 <DepartmentPay key={selectedPay.currency} currency={selectedPay.currency} department={query.department}
                   departments={result.departmentPay.filter(row => row.currency === selectedPay.currency)} focus={focus} onSelect={selectSegment} />
