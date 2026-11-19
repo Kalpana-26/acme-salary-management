@@ -88,34 +88,34 @@ button.reset { border-color: transparent; color: var(--accent-dark); }
 .dashboard-panels {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-areas: "summary summary" "departments departments" "bands range";
+  grid-template-areas: "feature feature" "bands range";
   gap: 14px;
 }
 .dashboard-panel, .pay-chart { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; min-width: 0; padding: clamp(14px, 1.8vw, 22px); }
 .dashboard-panel h3 { font-size: .98rem; color: #1a1a1a; margin-bottom: 6px; }
 .distribution { grid-area: bands; }
 .pay-chart { grid-area: range; container-type: inline-size; }
-.pay-summary {
-  grid-area: summary;
+.dashboard-feature {
+  grid-area: feature;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(150px, 235px);
-  align-items: center;
-  gap: 20px;
-  padding: clamp(18px, 3vw, 34px);
-  border-radius: 24px;
-  background: linear-gradient(130deg, #292420, #1a1a1a 70%);
+  grid-template-columns: minmax(250px, 1fr) minmax(0, 1.8fr);
+  border: 1px solid #39322c;
+  border-radius: 22px;
+  background: #201d1a;
   color: #fff;
 }
+.pay-summary { display: grid; align-content: center; gap: 22px; padding: clamp(18px, 2.5vw, 32px); border-right: 1px solid #453b34; }
 .pay-summary h3 { color: #e1dad5; font-size: .95rem; font-weight: 550; }
-.summary-amount { margin-block: 6px 18px; font-size: clamp(1.8rem, 4.2vw, 4rem); line-height: 1.05; font-weight: 750; letter-spacing: -.045em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.summary-amount { margin-block: 8px 16px; font-size: clamp(1.7rem, 2.9vw, 3.4rem); line-height: 1.08; font-weight: 750; letter-spacing: -.045em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .currency-tabs { display: flex; flex-wrap: wrap; gap: 7px; }
-.currency-tabs button { min-height: 40px; border-radius: 10px; border-color: #5f5550; background: #342e2a; color: #f7eee7; }
+.currency-tabs button { min-height: 36px; padding-inline: 9px; border-radius: 8px; border-color: #5f5550; background: #342e2a; color: #f7eee7; }
 .currency-tabs button:hover:not(:disabled) { border-color: #ffab73; background: #4d3526; color: #fff; }
 .currency-tabs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #1a1a1a; }
 .currency-tabs button:focus-visible, .department-plot:focus-visible { outline-color: #ffac70; }
-.summary-headcount { text-align: center; }
-.summary-headcount p { color: #e1dad5; font-size: .8rem; margin-top: 10px; }
-.department-pay { grid-area: departments; background: #24211f; border-color: #443a34; border-radius: 24px; color: #fff; }
+.summary-headcount { display: flex; align-items: center; gap: 12px; }
+.summary-headcount p { color: #e1dad5; font-size: .78rem; }
+.summary-headcount p strong { display: block; margin-bottom: 3px; color: #fff; font-size: .95rem; font-variant-numeric: tabular-nums; }
+.department-pay { background: transparent; border: 0; padding: clamp(18px, 2.5vw, 32px); color: #fff; }
 .department-pay h3 { color: #fff; font-size: 1.13rem; }
 .department-pay .muted { color: #e1dad5; }
 .department-chart { --plot-height: 180px; --plot-grid: #554942; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 9px; margin-top: 22px; }
@@ -134,17 +134,13 @@ button.reset { border-color: transparent; color: var(--accent-dark); }
 .department-columns li > strong, .department-columns li > span { display: block; font-size: .77rem; }
 .department-amount { font-weight: 700; margin-block: 4px 2px; font-variant-numeric: tabular-nums; }
 @media (max-width: 520px) {
-  .pay-summary { grid-template-columns: 1fr; gap: 15px; }
-  .summary-headcount { display: flex; align-items: center; gap: 12px; text-align: left; }
-  .summary-headcount p { margin: 0; }
   .department-columns li > strong, .department-columns li > span { font-size: .65rem; }
   .department-scale { font-size: .62rem; }
   .department-tooltip { white-space: normal; width: 106px; }
 }
-.headcount-ring { display: grid; place-items: center; width: clamp(85px, 11vw, 125px); flex: none; aspect-ratio: 1; margin: auto; border-radius: 50%; background: conic-gradient(var(--accent) var(--share, 0%), #514033 0); text-align: center; }
+.headcount-ring { display: grid; place-items: center; width: 62px; flex: none; aspect-ratio: 1; border-radius: 50%; background: conic-gradient(var(--accent) var(--share, 0%), #514033 0); text-align: center; }
 .headcount-ring > div { width: 78%; aspect-ratio: 1; display: grid; align-content: center; border-radius: 50%; background: #1a1a1a; }
-.headcount-ring strong { font-size: clamp(.93rem, 2vw, 1.4rem); font-variant-numeric: tabular-nums; }
-.headcount-ring span { color: #e1dad5; font-size: .66rem; }
+.headcount-ring strong { font-size: .82rem; font-variant-numeric: tabular-nums; }
 .card-currency { font-size: .8rem; color: var(--accent-dark); letter-spacing: .05em; padding: 5px 8px; border-radius: 6px; background: var(--accent-light); }
 .distribution-bars { display: grid; gap: 10px; padding: 0; margin: 14px 0 0; list-style: none; }
 .distribution-bars li > div { display: flex; justify-content: space-between; gap: 6px; align-items: baseline; font-size: .77rem; }
@@ -158,7 +154,11 @@ button.reset { border-color: transparent; color: var(--accent-dark); }
   .department-bar { animation: none; }
 }
 @media (max-width: 620px) {
-  .dashboard-panels { grid-template-columns: minmax(0, 1fr); grid-template-areas: "summary" "departments" "bands" "range"; gap: 10px; }
+  .dashboard-panels { grid-template-columns: minmax(0, 1fr); grid-template-areas: "feature" "bands" "range"; gap: 10px; }
+}
+@media (max-width: 1050px) {
+  .dashboard-feature { grid-template-columns: minmax(0, 1fr); }
+  .pay-summary { border-right: 0; border-bottom: 1px solid #453b34; }
 }
 @container (max-width: 290px) {
   .pay-values { grid-template-columns: 1fr; }

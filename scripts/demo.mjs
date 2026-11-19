@@ -44,6 +44,7 @@ try {
   await euroButton.click();
   assert.equal(await euroButton.getAttribute('aria-pressed'), 'true');
   await page.getByRole('region', { name: 'Average annual base pay' }).getByText('€75,933.65', { exact: true }).waitFor();
+  await page.getByRole('region', { name: 'Average annual base pay' }).getByText('20%', { exact: true }).waitFor();
   const engineeringBar = departments.getByRole('button', { name: /^Engineering:/ });
   await engineeringBar.click();
   assert.equal(await engineeringBar.getAttribute('aria-pressed'), 'true');

@@ -7,6 +7,7 @@ const money = (cents, currency, currencyDisplay = 'code') => new Intl.NumberForm
   style: 'currency', currency, currencyDisplay,
 }).format(cents / 100);
 const number = new Intl.NumberFormat('en');
+const percent = new Intl.NumberFormat('en', { style: 'percent', maximumFractionDigits: 2 });
 const employeeCode = id => 'ACME-' + String(id).padStart(4, '0');
 
 async function api(path, options) {
@@ -190,9 +191,10 @@ function PaySummary({ selected, summary, total, onCurrencyChange }) {
     </div>
     <div className="summary-headcount">
       <div className="headcount-ring" ref={element => element?.style.setProperty('--share', share + '%')}>
-        <div><strong>{number.format(selected.headcount)}</strong><span>employees</span></div>
+        <div><strong>{percent.format(share / 100)}</strong></div>
       </div>
-      <p>{number.format(selected.headcount)} of {number.format(total)} matching employees paid in {selected.currency}</p>
+      <p><strong>{number.format(selected.headcount)} of {number.format(total)}</strong>
+        <span>matching employees paid in {selected.currency}</span></p>
     </div>
   </section>;
 }
@@ -342,9 +344,11 @@ function SalaryWorkspace({ onExpired, view }) {
         result && (overview ?
           <section aria-labelledby="overview">
             {!selectedPay ? <p className="empty">No employees match your filters.</p> : <div className="dashboard-panels">
-              <PaySummary selected={selectedPay} summary={result.summary} total={result.total} onCurrencyChange={setChartCurrency} />
-              <DepartmentPay key={selectedPay.currency} currency={selectedPay.currency} department={query.department}
-                departments={result.departmentPay.filter(row => row.currency === selectedPay.currency)} />
+              <div className="dashboard-feature">
+                <PaySummary selected={selectedPay} summary={result.summary} total={result.total} onCurrencyChange={setChartCurrency} />
+                <DepartmentPay key={selectedPay.currency} currency={selectedPay.currency} department={query.department}
+                  departments={result.departmentPay.filter(row => row.currency === selectedPay.currency)} />
+              </div>
               <SalaryBands selected={selectedPay} counts={result.salaryBands.filter(row => row.currency === selectedPay.currency)} />
               <PayChart selected={selectedPay} />
             </div>}
