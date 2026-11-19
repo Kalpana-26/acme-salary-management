@@ -32,17 +32,21 @@ try {
   await page.getByLabel('Username').fill('admin');
   await page.getByLabel('Password').fill('acme-local-demo');
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await page.getByText('10,000 matching employees').waitFor();
+  await page.getByText('10,000 matching employees', { exact: true }).waitFor();
   const chart = page.getByRole('region', { name: 'Annual base pay' });
   await chart.locator('.pay-values').getByText('CA$117,688.23', { exact: true }).waitFor();
   await page.getByRole('heading', { name: 'Employees by salary band' }).waitFor();
   const departments = page.getByRole('region', { name: 'Average base pay by department' });
   assert.equal(await departments.getByRole('listitem').count(), 5);
-  assert.ok(await departments.locator('.department-plot span').evaluateAll(bars =>
+  assert.ok(await departments.locator('.department-bar').evaluateAll(bars =>
     bars.every(bar => bar.clientHeight > 0 && bar.clientHeight <= bar.parentElement.clientHeight)));
   const euroButton = page.getByRole('button', { name: 'Show EUR salary range' });
   await euroButton.click();
   assert.equal(await euroButton.getAttribute('aria-pressed'), 'true');
+  await page.getByRole('region', { name: 'Average annual base pay' }).getByText('€75,933.65', { exact: true }).waitFor();
+  const engineeringBar = departments.getByRole('button', { name: /^Engineering:/ });
+  await engineeringBar.click();
+  assert.equal(await engineeringBar.getAttribute('aria-pressed'), 'true');
   const average = chart.getByRole('button', { name: 'Average salary: EUR 75,933.65' });
   await chart.getByRole('button', { name: /^Low salary/ }).focus();
   await page.keyboard.press('Tab');
@@ -53,7 +57,7 @@ try {
   assert.equal(await page.getByRole('button', { name: 'Clear filters' }).count(), 0);
   await seconds(3);
   await page.getByLabel('Country', { exact: true }).selectOption('India');
-  await page.getByText('2,000 matching employees').waitFor();
+  await page.getByText('2,000 matching employees', { exact: true }).waitFor();
   assert.equal(await page.getByRole('button', { name: 'Show INR salary range' }).getAttribute('aria-pressed'), 'true');
   await page.getByLabel('Department', { exact: true }).selectOption('Engineering');
   await departments.getByRole('listitem').filter({ hasText: 'Engineering' }).waitFor();
@@ -79,7 +83,7 @@ try {
   await page.getByRole('button', { name: 'Search' }).click();
   await page.getByText('1–1 of 1', { exact: true }).waitFor();
   await page.getByRole('link', { name: 'Dashboard' }).click();
-  await page.getByText('10,000 matching employees').waitFor();
+  await page.getByText('10,000 matching employees', { exact: true }).waitFor();
   await page.getByRole('link', { name: 'Employees', exact: true }).click();
   await page.getByText('1–1 of 1', { exact: true }).waitFor();
   await seconds();

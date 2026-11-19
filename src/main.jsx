@@ -175,12 +175,24 @@ function PayChart({ selected }) {
   </section>;
 }
 
-function HeadcountRing({ title, amount, total, detail, className }) {
-  const share = total ? amount / total * 100 : 0;
-  return <section className={'dashboard-panel ' + className}>
-    <h3>{title}</h3>
-    <div className="headcount-ring" ref={element => element?.style.setProperty('--share', share + '%')}>
-      <div><strong>{number.format(amount)}</strong><span>{detail}</span></div>
+function PaySummary({ selected, summary, total, onCurrencyChange }) {
+  const share = selected.headcount / total * 100;
+  return <section className="pay-summary" aria-labelledby="pay-summary-title">
+    <div>
+      <h3 id="pay-summary-title">Average annual base pay</h3>
+      <p className="summary-amount">{money(selected.average, selected.currency, 'symbol')}</p>
+      <div className="currency-tabs" role="group" aria-label="Pay currency">
+        {summary.map(item => <button key={item.currency}
+          aria-label={'Show ' + item.currency + ' salary range'}
+          aria-pressed={item.currency === selected.currency}
+          onClick={() => onCurrencyChange(item.currency)}>{item.currency}</button>)}
+      </div>
+    </div>
+    <div className="summary-headcount">
+      <div className="headcount-ring" ref={element => element?.style.setProperty('--share', share + '%')}>
+        <div><strong>{number.format(selected.headcount)}</strong><span>employees</span></div>
+      </div>
+      <p>{number.format(selected.headcount)} of {number.format(total)} matching employees paid in {selected.currency}</p>
     </div>
   </section>;
 }
@@ -208,7 +220,8 @@ function SalaryBands({ selected, counts }) {
   </section>;
 }
 
-function DepartmentPay({ currency, departments }) {
+function DepartmentPay({ currency, departments, department }) {
+  const [activeColumn, setActiveColumn] = useState(null);
   const maximum = Math.max(...departments.map(item => item.average));
   const step = 10 ** Math.floor(Math.log10(maximum));
   const scale = Math.ceil(maximum / step) * step;
@@ -220,10 +233,16 @@ function DepartmentPay({ currency, departments }) {
         {[scale, scale / 2, 0].map(value => <span key={value}>{number.format(value / 100)}</span>)}
       </div>
       <ul className="department-columns">
-        {departments.map(item => <li key={item.department}>
-          <div className="department-plot" aria-hidden="true">
-            <span ref={node => node?.style.setProperty('--bar-height', item.average / scale * 100 + '%')} />
-          </div>
+        {departments.map(item => <li key={item.department} className={department === item.department ? 'filtered-department' : undefined}>
+          <button className="department-plot"
+            aria-label={item.department + ': ' + money(item.average, currency) + ', ' + number.format(item.headcount) + (item.headcount === 1 ? ' employee' : ' employees')}
+            aria-pressed={activeColumn === item.department}
+            onClick={() => setActiveColumn(current => current === item.department ? null : item.department)}
+            onKeyDown={event => { if (event.key === 'Escape') setActiveColumn(null); }}>
+            <span className="department-bar" aria-hidden="true"
+              ref={node => node?.style.setProperty('--bar-height', item.average / scale * 100 + '%')} />
+            <span className="department-tooltip" aria-hidden="true">{money(item.average, currency, 'symbol')} · {number.format(item.headcount)} {item.headcount === 1 ? 'employee' : 'employees'}</span>
+          </button>
           <strong>{item.department}</strong>
           <span className="department-amount">{money(item.average, currency, 'symbol')}</span>
           <span className="muted">{number.format(item.headcount)} {item.headcount === 1 ? 'employee' : 'employees'}</span>
@@ -323,26 +342,11 @@ function SalaryWorkspace({ onExpired, view }) {
         result && (overview ?
           <section aria-labelledby="overview">
             {!selectedPay ? <p className="empty">No employees match your filters.</p> : <div className="dashboard-panels">
-              <DepartmentPay currency={selectedPay.currency} departments={result.departmentPay.filter(row => row.currency === selectedPay.currency)} />
-              <HeadcountRing className="matched" title="Matching employees" amount={result.total}
-                total={result.organizationTotal} detail={'of ' + number.format(result.organizationTotal)} />
-              <HeadcountRing className="selected" title={'Paid in ' + selectedPay.currency} amount={selectedPay.headcount}
-                total={result.total} detail={'of ' + number.format(result.total) + ' matches'} />
+              <PaySummary selected={selectedPay} summary={result.summary} total={result.total} onCurrencyChange={setChartCurrency} />
+              <DepartmentPay key={selectedPay.currency} currency={selectedPay.currency} department={query.department}
+                departments={result.departmentPay.filter(row => row.currency === selectedPay.currency)} />
               <SalaryBands selected={selectedPay} counts={result.salaryBands.filter(row => row.currency === selectedPay.currency)} />
               <PayChart selected={selectedPay} />
-              <section className="dashboard-panel currency-breakdown">
-                <h3>Employees by currency</h3>
-                <p className="muted">Select a currency to update the pay charts.</p>
-                <ul className="distribution-bars">
-                  {result.summary.map(item => <li key={item.currency}>
-                    <button className="currency-choice" aria-label={'Show ' + item.currency + ' salary range'}
-                      aria-pressed={selectedPay.currency === item.currency} onClick={() => setChartCurrency(item.currency)}>
-                      <span><strong>{item.currency}</strong><span>{number.format(item.headcount)}</span></span>
-                      <progress value={item.headcount} max={result.total} aria-hidden="true" />
-                    </button>
-                  </li>)}
-                </ul>
-              </section>
             </div>}
           </section> :
           <section className="directory" aria-labelledby="directory-title">
