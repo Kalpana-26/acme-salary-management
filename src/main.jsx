@@ -326,6 +326,7 @@ function SalaryWorkspace({ onExpired, view }) {
         <div><h1>{overview ? 'Salary dashboard' : 'Employee directory'}</h1>
           <p className="intro">{overview ? 'Explore how ACME pays across countries and departments.' : 'Find employees, edit salaries, and review changes.'}</p></div>
       </div>
+      <div className={overview ? 'analysis-toolbar' : undefined}>
       {overview && <div className="section-heading overview-heading">
         <h2 id="overview">Pay overview</h2>
         {!pending && !error && result && <div className="overview-actions">
@@ -357,6 +358,7 @@ function SalaryWorkspace({ onExpired, view }) {
           setQuery(current => ({ q: overview ? current.q : '', country: '', department: '', page: 1 }));
         }}>Clear filters</button>}
       </section>
+      </div>
       {!overview && directoryScope && <div className="analysis-selection">
         <div><strong>{directoryScope.label}</strong><p className="muted">Chart selection</p></div>
         <a href="#dashboard">Back to analysis</a>
@@ -375,10 +377,11 @@ function SalaryWorkspace({ onExpired, view }) {
                 if (selectedPay.currency !== currency) setFocus(null);
                 setChartCurrency(currency);
               }} />
-              {focus && <div className="analysis-selection has-selection" aria-live="polite">
-                  <div><strong>{focus.label}</strong><p className="muted">{number.format(focus.count)} {focus.count === 1 ? 'employee' : 'employees'} in this selection</p></div>
-                  <a className="matching-link" href="#directory" onClick={() => openDirectory(focus)}>Open selected employees <span aria-hidden="true">→</span></a>
-                  <button className="reset" onClick={() => setFocus(null)}>Clear selection</button>
+              {focus && <div className="analysis-selection has-selection" role="region" aria-label="Chart selection">
+                  <div aria-live="polite"><strong>{focus.label}</strong>
+                    <p className="muted">{number.format(focus.count)} {focus.count === 1 ? 'employee' : 'employees'} · {percent.format(focus.count / selectedPay.headcount)} of {selectedPay.currency} matches</p></div>
+                  <a className="matching-link selection-action" href="#directory" onClick={() => openDirectory(focus)}>Open selected employees <span aria-hidden="true">→</span></a>
+                  <button className="reset selection-dismiss" onClick={() => setFocus(null)}>Clear selection</button>
               </div>}
               <div className="dashboard-feature">
                 <DepartmentPay key={selectedPay.currency} currency={selectedPay.currency} department={query.department}
