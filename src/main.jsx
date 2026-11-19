@@ -210,16 +210,26 @@ function SalaryBands({ selected, counts }) {
 
 function DepartmentPay({ currency, departments }) {
   const maximum = Math.max(...departments.map(item => item.average));
+  const step = 10 ** Math.floor(Math.log10(maximum));
+  const scale = Math.ceil(maximum / step) * step;
   return <section className="dashboard-panel department-pay" aria-labelledby="department-pay-title">
     <h3 id="department-pay-title">Average base pay by department</h3>
     <p className="muted">{currency} · Gross annual base pay · Current filters</p>
-    <ul className="distribution-bars">
-      {departments.map(item => <li key={item.department}>
-        <div><span><strong>{item.department}</strong> · {number.format(item.headcount)} {item.headcount === 1 ? 'employee' : 'employees'}</span>
-          <strong>{money(item.average, currency, 'symbol')}</strong></div>
-        <progress value={item.average} max={maximum} aria-hidden="true" />
-      </li>)}
-    </ul>
+    <div className="department-chart">
+      <div className="department-scale" aria-hidden="true">
+        {[scale, scale / 2, 0].map(value => <span key={value}>{number.format(value / 100)}</span>)}
+      </div>
+      <ul className="department-columns">
+        {departments.map(item => <li key={item.department}>
+          <div className="department-plot" aria-hidden="true">
+            <span ref={node => node?.style.setProperty('--bar-height', item.average / scale * 100 + '%')} />
+          </div>
+          <strong>{item.department}</strong>
+          <span className="department-amount">{money(item.average, currency, 'symbol')}</span>
+          <span className="muted">{number.format(item.headcount)} {item.headcount === 1 ? 'employee' : 'employees'}</span>
+        </li>)}
+      </ul>
+    </div>
   </section>;
 }
 
@@ -313,6 +323,7 @@ function SalaryWorkspace({ onExpired, view }) {
         result && (overview ?
           <section aria-labelledby="overview">
             {!selectedPay ? <p className="empty">No employees match your filters.</p> : <div className="dashboard-panels">
+              <DepartmentPay currency={selectedPay.currency} departments={result.departmentPay.filter(row => row.currency === selectedPay.currency)} />
               <HeadcountRing className="matched" title="Matching employees" amount={result.total}
                 total={result.organizationTotal} detail={'of ' + number.format(result.organizationTotal)} />
               <HeadcountRing className="selected" title={'Paid in ' + selectedPay.currency} amount={selectedPay.headcount}
@@ -332,7 +343,6 @@ function SalaryWorkspace({ onExpired, view }) {
                   </li>)}
                 </ul>
               </section>
-              <DepartmentPay currency={selectedPay.currency} departments={result.departmentPay.filter(row => row.currency === selectedPay.currency)} />
             </div>}
           </section> :
           <section className="directory" aria-labelledby="directory-title">

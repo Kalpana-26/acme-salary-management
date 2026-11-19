@@ -38,6 +38,8 @@ try {
   await page.getByRole('heading', { name: 'Employees by salary band' }).waitFor();
   const departments = page.getByRole('region', { name: 'Average base pay by department' });
   assert.equal(await departments.getByRole('listitem').count(), 5);
+  assert.ok(await departments.locator('.department-plot span').evaluateAll(bars =>
+    bars.every(bar => bar.clientHeight > 0 && bar.clientHeight <= bar.parentElement.clientHeight)));
   const euroButton = page.getByRole('button', { name: 'Show EUR salary range' });
   await euroButton.click();
   assert.equal(await euroButton.getAttribute('aria-pressed'), 'true');
