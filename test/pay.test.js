@@ -45,6 +45,9 @@ test('search and combined filters apply equally to the directory and summary', t
   const result = directory(db, new URLSearchParams({ q: '1', department: employee.department, country: employee.country }));
   assert.deepEqual(result.employees.map(row => row.id), [1]);
   assert.deepEqual(result.salaryBands.map(row => ({ ...row })), [{ currency: employee.currency, band: 0, headcount: 1 }]);
+  assert.deepEqual(result.departmentPay.map(row => ({ ...row })), [{
+    currency: employee.currency, department: employee.department, headcount: 1, average: employee.cents,
+  }]);
   assert.deepEqual(directory(db, new URLSearchParams({ q: ' acme-0001 ' })).employees.map(row => row.id), [1]);
   assert.deepEqual({ ...result.summary[0] }, {
     currency: employee.currency, headcount: 1, average: employee.cents,

@@ -6,7 +6,7 @@ An HR manager can use this app to answer questions like “What is the average b
 
 ## Try the HR workflow
 
-1. Choose **India** and **Engineering**. The pay overview shows the number of employees and their average, minimum, and maximum annual base pay in INR.
+1. Choose **India**. The dashboard shows salary bands, the low-to-high pay range, and average base pay by department in INR. Select **Engineering** to narrow the analysis to that team.
 2. Select **View matching employees** to open the directory with those filters. Select **Clear filters**, search for `ACME-0001` or `1`, and open **Edit**.
 3. Enter a new salary and save. The change history shows the previous amount, the new amount, and when it changed. Close the record to see the updated salary in the directory.
 

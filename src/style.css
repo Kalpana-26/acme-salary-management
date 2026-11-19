@@ -86,7 +86,7 @@ button.reset { border-color: transparent; color: var(--accent-dark); }
 .dashboard-panels {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-areas: "matched selected" "breakdown breakdown" "bands range";
+  grid-template-areas: "matched selected" "breakdown breakdown" "bands range" "departments departments";
   gap: 14px;
 }
 .dashboard-panel, .pay-chart { background: #f8fbfc; border: 1px solid #dae4ea; border-radius: 12px; min-width: 0; padding: clamp(14px, 1.8vw, 22px); }
@@ -96,6 +96,8 @@ button.reset { border-color: transparent; color: var(--accent-dark); }
 .distribution { grid-area: bands; }
 .pay-chart { grid-area: range; container-type: inline-size; }
 .currency-breakdown { grid-area: breakdown; }
+.department-pay { grid-area: departments; }
+.department-pay .distribution-bars li > div { flex-wrap: wrap; gap: 4px 12px; }
 .headcount-ring { display: grid; place-items: center; width: min(150px, 100%); aspect-ratio: 1; margin: 15px auto 1px; border-radius: 50%; background: conic-gradient(#0b827f var(--share, 0%), #dcebed 0); }
 .selected .headcount-ring { background: conic-gradient(#215995 var(--share, 0%), #dee8f2 0); }
 .headcount-ring > div { width: 80%; aspect-ratio: 1; display: grid; align-content: center; border-radius: 50%; background: #f8fbfc; padding: 6px; }
@@ -117,10 +119,10 @@ button.reset { border-color: transparent; color: var(--accent-dark); }
   .point-average { transition: none; }
 }
 @media (min-width: 1160px) {
-  .dashboard-panels { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-areas: "matched selected breakdown" "bands range breakdown"; }
+  .dashboard-panels { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-areas: "matched selected breakdown" "bands range breakdown" "departments departments departments"; }
 }
 @media (max-width: 620px) {
-  .dashboard-panels { grid-template-areas: "matched selected" "breakdown breakdown" "bands bands" "range range"; gap: 10px; }
+  .dashboard-panels { grid-template-areas: "matched selected" "breakdown breakdown" "bands bands" "range range" "departments departments"; gap: 10px; }
 }
 @container (max-width: 290px) {
   .pay-values { grid-template-columns: 1fr; }

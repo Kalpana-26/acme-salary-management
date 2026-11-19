@@ -70,13 +70,16 @@ export function directory(db, params) {
       round(avg(cents)) AS average, min(cents) AS minimum, max(cents) AS maximum
       FROM employees ${where} GROUP BY currency ORDER BY currency`).all(...args);
     const organizationTotal = db.prepare('SELECT count(*) AS total FROM employees').get().total;
+    const departmentPay = db.prepare(`SELECT currency, department, count(*) AS headcount,
+      round(avg(cents)) AS average FROM employees ${where}
+      GROUP BY currency, department ORDER BY currency, department`).all(...args);
     const salaryBands = db.prepare(`WITH matching AS (SELECT currency, cents FROM employees ${where}),
       ranges AS (SELECT currency, min(cents) AS low, max(cents) AS high FROM matching GROUP BY currency)
       SELECT matching.currency, (cents - low) * 5 / (high - low + 1) AS band, count(*) AS headcount
       FROM matching JOIN ranges USING (currency) GROUP BY matching.currency, band
       ORDER BY matching.currency, band`).all(...args);
     db.exec('COMMIT');
-    return { employees, summary, salaryBands, organizationTotal, page, pageSize,
+    return { employees, summary, salaryBands, departmentPay, organizationTotal, page, pageSize,
       total: summary.reduce((n, row) => n + row.headcount, 0) };
   } catch (error) {
     db.exec('ROLLBACK');

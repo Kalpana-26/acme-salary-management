@@ -36,6 +36,8 @@ try {
   const chart = page.getByRole('region', { name: 'Annual base pay' });
   await chart.locator('.pay-values').getByText('CA$117,688.23', { exact: true }).waitFor();
   await page.getByRole('heading', { name: 'Employees by salary band' }).waitFor();
+  const departments = page.getByRole('region', { name: 'Average base pay by department' });
+  assert.equal(await departments.getByRole('listitem').count(), 5);
   const euroButton = page.getByRole('button', { name: 'Show EUR salary range' });
   await euroButton.click();
   assert.equal(await euroButton.getAttribute('aria-pressed'), 'true');
@@ -52,6 +54,8 @@ try {
   await page.getByText('2,000 matching employees').waitFor();
   assert.equal(await page.getByRole('button', { name: 'Show INR salary range' }).getAttribute('aria-pressed'), 'true');
   await page.getByLabel('Department', { exact: true }).selectOption('Engineering');
+  await departments.getByRole('listitem').filter({ hasText: 'Engineering' }).waitFor();
+  assert.equal(await departments.getByRole('listitem').count(), 1);
   await seconds(3);
   await page.getByRole('link', { name: 'View matching employees' }).click();
   await page.getByRole('heading', { name: 'Employee directory' }).waitFor();
