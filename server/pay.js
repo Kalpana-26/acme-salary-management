@@ -58,9 +58,20 @@ export function directory(db, params) {
   }
   const country = params.get('country') ?? '';
   const department = params.get('department') ?? '';
-  const args = [search, Number.isSafeInteger(searchedId) ? searchedId : null, country, country, department, department];
+  const currency = params.get('currency') ?? '';
+  const low = params.get('minCents');
+  const high = params.get('maxCents');
+  if (currency && !/^[A-Z]{3}$/.test(currency)) throw new InputError('Invalid currency.');
+  if ((low !== null || high !== null) &&
+    (!currency || !/^\d{1,10}$/.test(low ?? '') || !/^\d{1,10}$/.test(high ?? '') ||
+      Number(low) < 1 || Number(high) > 1_000_000_000 || Number(low) > Number(high))) {
+    throw new InputError('Invalid salary band.');
+  }
+  const args = [search, Number.isSafeInteger(searchedId) ? searchedId : null, country, country, department, department,
+    currency, currency, low === null ? 1 : Number(low), high === null ? 1_000_000_000 : Number(high)];
   const where = `WHERE (instr(lower(name), lower(?)) > 0 OR id = ?)
-    AND (? = '' OR country = ?) AND (? = '' OR department = ?)`;
+    AND (? = '' OR country = ?) AND (? = '' OR department = ?)
+    AND (? = '' OR currency = ?) AND cents BETWEEN ? AND ?`;
   const pageSize = 25;
   db.exec('BEGIN');
   try {

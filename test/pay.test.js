@@ -73,6 +73,23 @@ test('updates preserve history, reject stale writes, and survive reseeding', t =
   assert.throws(() => updateSalary(db, 99, '75000', 1), { status: 404 });
 });
 
+test('chart drill-down scopes employee records by currency and inclusive salary bounds', t => {
+  const db = fixture(t);
+  const { employee } = employeeDetail(db, 1);
+  const params = new URLSearchParams({
+    currency: employee.currency, department: employee.department,
+    minCents: employee.cents, maxCents: employee.cents,
+  });
+  const result = directory(db, params);
+  assert.equal(result.total, 1);
+  assert.deepEqual(result.employees.map(row => row.id), [1]);
+  params.delete('currency');
+  assert.throws(() => directory(db, params), { status: 400 });
+  params.set('currency', employee.currency);
+  params.set('maxCents', String(employee.cents - 1));
+  assert.throws(() => directory(db, params), { status: 400 });
+});
+
 test('rolls back the salary update when the history write fails', t => {
   const db = fixture(t);
   const before = employeeDetail(db, 1);
