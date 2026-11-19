@@ -154,7 +154,7 @@ function PayChart({ selected }) {
   return <section className="pay-chart" aria-labelledby="pay-chart-title">
     <div className="pay-chart-heading">
       <div><h3 id="pay-chart-title">Annual base pay</h3>
-        <p className="muted">{number.format(selected.headcount)} {selected.headcount === 1 ? 'employee' : 'employees'} paid in {selected.currency}</p></div>
+        <p className="muted">Lowest, average, and highest salary</p></div>
       <span className="card-currency">{selected.currency}</span>
     </div>
     <div className="pay-plot" ref={element => element?.style.setProperty('--average-position', averagePosition + '%')}>
@@ -205,7 +205,7 @@ function SalaryBands({ selected, counts }) {
   const largest = Math.max(...counts.map(row => row.headcount), 1);
   return <section className="dashboard-panel distribution">
     <h3>Employees by salary band</h3>
-    <p className="muted">{selected.currency} · Gross annual base pay</p>
+    <p className="muted">Employee counts across {selected.currency} pay bands</p>
     <ul className="distribution-bars">
       {boundaries.slice(0, -1).map((start, index) => {
         const end = boundaries[index + 1] - 1;
@@ -229,7 +229,7 @@ function DepartmentPay({ currency, departments, department }) {
   const scale = Math.ceil(maximum / step) * step;
   return <section className="dashboard-panel department-pay" aria-labelledby="department-pay-title">
     <h3 id="department-pay-title">Average base pay by department</h3>
-    <p className="muted">{currency} · Gross annual base pay · Current filters</p>
+    <p className="muted">Annual salaries in {currency} for the current filters</p>
     <div className="department-chart">
       <div className="department-scale" aria-hidden="true">
         {[scale, scale / 2, 0].map(value => <span key={value}>{number.format(value / 100)}</span>)}
@@ -301,10 +301,10 @@ function SalaryWorkspace({ onExpired, view }) {
   }
 
   return <>
-    <main className="wrap">
+    <main className={overview ? 'wrap workspace-overview' : 'wrap'}>
       <div className="page-heading">
         <div><h1>{overview ? 'Salary dashboard' : 'Employee directory'}</h1>
-          <p className="intro">{overview ? 'Review gross annual base pay by currency.' : 'Find employees, edit salaries, and review changes.'}</p></div>
+          <p className="intro">{overview ? 'Explore how ACME pays across countries and departments.' : 'Find employees, edit salaries, and review changes.'}</p></div>
         <div className="dataset"><span aria-hidden="true" /> Fictional employee data</div>
       </div>
       {overview && <div className="section-heading overview-heading">
