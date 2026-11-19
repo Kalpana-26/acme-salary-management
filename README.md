@@ -28,7 +28,7 @@ Run `npm test` to check salary validation, filtered totals, stale edits, audit h
 
 ## Deploy
 
-For a free assessment demo on Render, choose **New → Blueprint**, connect this repository, and use `render.yaml` from `main`. Enter a new `REVIEWER_PASSWORD` when prompted. Once the service is live, open its HTTPS URL and sign in as `admin`. The free service may take a moment to wake up. Its filesystem is ephemeral, so salary edits and history reset when it sleeps, restarts, or redeploys. The app reseeds the fictional dataset on startup.
+For a free assessment demo on Render, choose **New → Blueprint**, connect this repository, and use `render.yaml` from `main`. Render generates `REVIEWER_PASSWORD` and stores it on the service’s Environment page. Once the service is live, open its HTTPS URL and sign in as `admin`. The free service may take a moment to wake up. Its filesystem is ephemeral, so salary edits and history reset when it sleeps, restarts, or redeploys. The app reseeds the fictional dataset on startup.
 
 Build the included Dockerfile and run one instance on a container host with a persistent volume mounted at `/app/data`. The image listens on port 3000 and provides `GET /health`. Set `REVIEWER_PASSWORD` using the host's secret settings. Serve the instance over HTTPS and set `COOKIE_SECURE=1`. Reviewers sign in with username `admin` and the configured password. Sessions expire after eight hours or when the server restarts. The sample Compose file binds to loopback for local verification.
 
