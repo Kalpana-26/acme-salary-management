@@ -31,8 +31,6 @@ button.logout:hover:not(:disabled) { color: white; background: #4a4a4a; }
 .sign-in { width: min(100%, 430px); margin: clamp(20px, 7vw, 90px) auto; padding: 26px; background: white; border: 1px solid var(--line); border-radius: 13px; }
 .sign-in h1 { font-size: 2rem; }
 .sign-in form { display: grid; gap: 14px; margin-top: 20px; }
-.dataset { display: flex; align-items: center; gap: 8px; font-size: .78rem; font-weight: 650; white-space: nowrap; background: #eee9e4; color: #4a4a4a; padding: 8px 11px; border-radius: 20px; }
-.dataset span { width: 7px; height: 7px; border-radius: 50%; background: #ff6b00; }
 main { padding-block: 24px 40px; }
 .page-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 h1 { font-size: clamp(1.65rem, 2.8vw, 2.5rem); line-height: 1.12; letter-spacing: -.045em; font-weight: 750; }

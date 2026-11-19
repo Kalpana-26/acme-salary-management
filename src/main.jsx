@@ -325,7 +325,6 @@ function SalaryWorkspace({ onExpired, view }) {
       <div className="page-heading">
         <div><h1>{overview ? 'Salary dashboard' : 'Employee directory'}</h1>
           <p className="intro">{overview ? 'Explore how ACME pays across countries and departments.' : 'Find employees, edit salaries, and review changes.'}</p></div>
-        <div className="dataset"><span aria-hidden="true" /> Fictional employee data</div>
       </div>
       {overview && <div className="section-heading overview-heading">
         <h2 id="overview">Pay overview</h2>
