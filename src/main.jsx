@@ -175,6 +175,39 @@ function PayChart({ selected }) {
   </section>;
 }
 
+function HeadcountRing({ title, amount, total, detail, className }) {
+  const share = total ? amount / total * 100 : 0;
+  return <section className={'dashboard-panel ' + className}>
+    <h3>{title}</h3>
+    <div className="headcount-ring" ref={element => element?.style.setProperty('--share', share + '%')}>
+      <div><strong>{number.format(amount)}</strong><span>{detail}</span></div>
+    </div>
+  </section>;
+}
+
+function SalaryBands({ selected, counts }) {
+  const spread = selected.maximum - selected.minimum + 1;
+  const boundaries = Array.from({ length: 6 }, (_, index) => selected.minimum + Math.ceil(spread * index / 5));
+  const largest = Math.max(...counts.map(row => row.headcount), 1);
+  return <section className="dashboard-panel distribution">
+    <h3>Employees by salary band</h3>
+    <p className="muted">{selected.currency} · Gross annual base pay</p>
+    <ul className="distribution-bars">
+      {boundaries.slice(0, -1).map((start, index) => {
+        const end = boundaries[index + 1] - 1;
+        if (start > end) return null;
+        const count = counts.find(row => row.band === index)?.headcount ?? 0;
+        const low = money(start, selected.currency, 'symbol');
+        const high = money(end, selected.currency, 'symbol');
+        return <li key={start}>
+          <div><span>{start === end ? low : low + ' – ' + high}</span><strong>{number.format(count)}</strong></div>
+          <progress value={count} max={largest} aria-hidden="true" />
+        </li>;
+      })}
+    </ul>
+  </section>;
+}
+
 function SalaryWorkspace({ onExpired, view }) {
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState({ q: '', country: '', department: '', page: 1 });
@@ -264,21 +297,26 @@ function SalaryWorkspace({ onExpired, view }) {
         <p className="error" role="alert">{error} <button onClick={() => setRevision(value => value + 1)}>Retry</button></p> :
         result && (overview ?
           <section aria-labelledby="overview">
-            {selectedPay && <PayChart selected={selectedPay} />}
-            {result.summary.length === 0 ? <p className="empty">No employees match your filters.</p> : <div className="cards">
-              {result.summary.map(item => {
-                return <article key={item.currency}>
-                  <div className="card-heading">
-                    <h3 className="card-currency">{item.currency}</h3>
-                    <span>{number.format(item.headcount)} {item.headcount === 1 ? 'employee' : 'employees'}</span>
-                  </div>
-                  <p className="average-label">Average annual salary</p>
-                  <p className="average">{money(item.average, item.currency, 'symbol')}</p>
-                  <button className="currency-select" aria-label={'Show ' + item.currency + ' salary range'}
-                    aria-pressed={selectedPay?.currency === item.currency}
-                    onClick={() => setChartCurrency(item.currency)} />
-                </article>;
-              })}
+            {!selectedPay ? <p className="empty">No employees match your filters.</p> : <div className="dashboard-panels">
+              <HeadcountRing className="matched" title="Matching employees" amount={result.total}
+                total={result.organizationTotal} detail={'of ' + number.format(result.organizationTotal)} />
+              <HeadcountRing className="selected" title={'Paid in ' + selectedPay.currency} amount={selectedPay.headcount}
+                total={result.total} detail={'of ' + number.format(result.total) + ' matches'} />
+              <SalaryBands selected={selectedPay} counts={result.salaryBands.filter(row => row.currency === selectedPay.currency)} />
+              <PayChart selected={selectedPay} />
+              <section className="dashboard-panel currency-breakdown">
+                <h3>Employees by currency</h3>
+                <p className="muted">Select a currency to update the pay charts.</p>
+                <ul className="distribution-bars">
+                  {result.summary.map(item => <li key={item.currency}>
+                    <button className="currency-choice" aria-label={'Show ' + item.currency + ' salary range'}
+                      aria-pressed={selectedPay.currency === item.currency} onClick={() => setChartCurrency(item.currency)}>
+                      <span><strong>{item.currency}</strong><span>{number.format(item.headcount)}</span></span>
+                      <progress value={item.headcount} max={result.total} aria-hidden="true" />
+                    </button>
+                  </li>)}
+                </ul>
+              </section>
             </div>}
           </section> :
           <section className="directory" aria-labelledby="directory-title">
@@ -290,13 +328,10 @@ function SalaryWorkspace({ onExpired, view }) {
             {result.employees.length === 0 ? <p className="empty">No employees match your filters.</p> :
               <div className="table-wrap" tabIndex={0} aria-label="Scrollable employee directory">
                 <table>
-                  <thead><tr><th scope="col">Employee</th><th scope="col">Department</th><th scope="col">Country</th>
+                  <thead><tr><th scope="col">Employee ID</th><th scope="col">Department</th><th scope="col">Country</th>
                     <th scope="col" className="pay">Annual base pay</th><th scope="col"><span className="sr-only">Action</span></th></tr></thead>
                   <tbody>{result.employees.map(employee => <tr key={employee.id}>
-                    <th scope="row"><div className="person">
-                      <span className="initials" aria-hidden="true">{employee.name.split(' ').slice(0, 2).map(part => part[0]).join('')}</span>
-                      <div>{employee.name} <span className="employee-id">· {employeeCode(employee.id)}</span><small>{employee.role}</small></div>
-                    </div></th>
+                    <th scope="row"><span className="employee-id">{employeeCode(employee.id)}</span><small>{employee.role}</small></th>
                     <td>{employee.department}</td><td>{employee.country}</td>
                     <td className="pay">{money(employee.cents, employee.currency)}</td>
                     <td><button aria-label={`Edit salary for ${employee.name} ${employeeCode(employee.id)}`}

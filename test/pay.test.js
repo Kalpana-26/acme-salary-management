@@ -25,9 +25,15 @@ test('directory pages a 10,000-person seed and keeps currencies separate', t => 
   const db = fixture(t, 10_000);
   const full = directory(db, new URLSearchParams());
   assert.equal(full.total, 10_000);
+  assert.equal(full.organizationTotal, 10_000);
   assert.equal(full.employees.length, 25);
   assert.equal(full.summary.length, 5);
   assert.ok(full.summary.every(row => row.headcount === 2000 && row.minimum <= row.average && row.average <= row.maximum));
+  for (const row of full.summary) {
+    const bands = full.salaryBands.filter(band => band.currency === row.currency);
+    assert.deepEqual(bands.map(band => band.band), [0, 1, 2, 3, 4]);
+    assert.equal(bands.reduce((total, band) => total + band.headcount, 0), row.headcount);
+  }
   const next = directory(db, new URLSearchParams({ page: '2' }));
   assert.ok(next.employees.every(row => !full.employees.some(first => first.id === row.id)));
   assert.throws(() => directory(db, new URLSearchParams({ page: '0' })), { status: 400 });
@@ -38,6 +44,7 @@ test('search and combined filters apply equally to the directory and summary', t
   const { employee } = employeeDetail(db, 1);
   const result = directory(db, new URLSearchParams({ q: '1', department: employee.department, country: employee.country }));
   assert.deepEqual(result.employees.map(row => row.id), [1]);
+  assert.deepEqual(result.salaryBands.map(row => ({ ...row })), [{ currency: employee.currency, band: 0, headcount: 1 }]);
   assert.deepEqual(directory(db, new URLSearchParams({ q: ' acme-0001 ' })).employees.map(row => row.id), [1]);
   assert.deepEqual({ ...result.summary[0] }, {
     currency: employee.currency, headcount: 1, average: employee.cents,

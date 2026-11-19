@@ -33,11 +33,9 @@ try {
   await page.getByLabel('Password').fill('acme-local-demo');
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.getByText('10,000 matching employees').waitFor();
-  const canadianPay = page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'CAD' }) });
-  await canadianPay.getByText('CA$117,688.23', { exact: true }).waitFor();
-  const euroPay = page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'EUR' }) });
-  await euroPay.getByText('€75,933.65', { exact: true }).waitFor();
   const chart = page.getByRole('region', { name: 'Annual base pay' });
+  await chart.locator('.pay-values').getByText('CA$117,688.23', { exact: true }).waitFor();
+  await page.getByRole('heading', { name: 'Employees by salary band' }).waitFor();
   const euroButton = page.getByRole('button', { name: 'Show EUR salary range' });
   await euroButton.click();
   assert.equal(await euroButton.getAttribute('aria-pressed'), 'true');
@@ -57,6 +55,7 @@ try {
   await seconds(3);
   await page.getByRole('link', { name: 'View matching employees' }).click();
   await page.getByRole('heading', { name: 'Employee directory' }).waitFor();
+  await page.getByRole('columnheader', { name: 'Employee ID' }).waitFor();
   assert.ok(page.url().endsWith('#directory'));
   assert.equal(await page.getByRole('link', { name: 'Employees' }).getAttribute('aria-current'), 'page');
   assert.equal(await page.getByLabel('Country', { exact: true }).inputValue(), 'India');
@@ -100,7 +99,7 @@ try {
   console.log('Browser walkthrough passed. Video saved to ' + target);
 } finally {
   await browser?.close();
-  if (recordingDir) await rm(recordingDir, { recursive: true, force: true });
+  if (recordingDir) await rm(recordingDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
   await new Promise(resolve => server.close(resolve));
   db.close();
 }
