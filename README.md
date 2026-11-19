@@ -28,6 +28,8 @@ Run `npm test` to check salary validation, filtered totals, stale edits, audit h
 
 ## Deploy
 
+For Render, choose **New → Blueprint**, connect this repository, and use `render.yaml` from `main`. The Blueprint requests a paid Starter web service with a 1 GB persistent disk. Enter a new `REVIEWER_PASSWORD` when prompted and review Render's charges before creating the service. Once it is live, open the HTTPS URL from the Render service page and sign in as `admin`.
+
 Build the included Dockerfile and run one instance on a container host with a persistent volume mounted at `/app/data`. The image listens on port 3000 and provides `GET /health`. Set `REVIEWER_PASSWORD` using the host's secret settings. Serve the instance over HTTPS and set `COOKIE_SECURE=1`. Reviewers sign in with username `admin` and the configured password. Sessions expire after eight hours or when the server restarts. The sample Compose file binds to loopback for local verification.
 
 ```sh

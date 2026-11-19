@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: acme-salary-management
+    runtime: docker
+    branch: main
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    disk:
+      name: salary-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: REVIEWER_PASSWORD
+        sync: false
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: DB_PATH
+        value: /app/data/acme.sqlite
+      - key: PORT
+        value: "3000"
