@@ -7,8 +7,8 @@ An HR manager can use this app to answer questions like “What is the average b
 ## Try the HR workflow
 
 1. Choose **India**. The dashboard shows salary bands, the low-to-high pay range, and average base pay by department in INR. Select **Engineering** to narrow the analysis to that team.
-2. Select **View matching employees** to open the directory with those filters. Select **Clear filters**, search for `ACME-0001` or `1`, and open **Edit**.
-3. Enter a new salary and save. The change history shows the previous amount, the new amount, and when it changed. Close the record to see the updated salary in the directory.
+2. Select a department column or a salary band, then **Open selected employees**. The directory shows the chart selection as a filter. **Back to analysis** returns to the same dashboard context.
+3. Select **Remove chart filter** and **Clear filters** as needed, search for `ACME-0001` or `1`, and choose **Edit**. Save a new salary and check the previous amount, new amount, and timestamp in the change history.
 
 The pay overview covers everyone who matches the filters, including employees on later pages.
 
@@ -35,6 +35,8 @@ docker compose up --build -d --wait
 ```
 
 Set `REVIEWER_PASSWORD` in your environment or in the ignored `.env` file before running Compose. Republishing the image preserves records as long as the same volume is mounted.
+
+To update a hosted instance, redeploy the latest GitHub `main` commit through your host and keep its existing persistent volume. Check that the public HTTPS endpoint returns `{"status":"ok"}` at `/health`, then open the app in a private browser window and verify sign-in and a chart selection. Share the HTTPS URL and reviewer credentials through the assessment reply.
 
 ## Re-record the demo
 

@@ -199,13 +199,13 @@ function PaySummary({ selected, summary, total, onCurrencyChange }) {
   </section>;
 }
 
-function SalaryBands({ selected, counts }) {
+function SalaryBands({ selected, counts, focus, onSelect }) {
   const spread = selected.maximum - selected.minimum + 1;
   const boundaries = Array.from({ length: 6 }, (_, index) => selected.minimum + Math.ceil(spread * index / 5));
   const largest = Math.max(...counts.map(row => row.headcount), 1);
   return <section className="dashboard-panel distribution">
     <h3>Employees by salary band</h3>
-    <p className="muted">Employee counts across {selected.currency} pay bands</p>
+    <p className="muted">Select a {selected.currency} pay band to explore its employees.</p>
     <ul className="distribution-bars">
       {boundaries.slice(0, -1).map((start, index) => {
         const end = boundaries[index + 1] - 1;
@@ -213,23 +213,28 @@ function SalaryBands({ selected, counts }) {
         const count = counts.find(row => row.band === index)?.headcount ?? 0;
         const low = money(start, selected.currency, 'symbol');
         const high = money(end, selected.currency, 'symbol');
+        const label = start === end ? low : low + ' – ' + high;
+        const key = 'band:' + start;
         return <li key={start}>
-          <div><span>{start === end ? low : low + ' – ' + high}</span><strong>{number.format(count)}</strong></div>
-          <progress value={count} max={largest} aria-hidden="true" />
+          <button className="band-control" disabled={count === 0} aria-pressed={focus?.key === key}
+            aria-label={'Explore pay band ' + label + ', ' + number.format(count) + ' employees'}
+            onClick={() => onSelect({ key, label, count, params: { currency: selected.currency, minCents: start, maxCents: end } })}>
+            <span><span>{label}</span><strong>{number.format(count)}</strong></span>
+            <progress value={count} max={largest} aria-hidden="true" />
+          </button>
         </li>;
       })}
     </ul>
   </section>;
 }
 
-function DepartmentPay({ currency, departments, department }) {
-  const [activeColumn, setActiveColumn] = useState(null);
+function DepartmentPay({ currency, departments, department, focus, onSelect }) {
   const maximum = Math.max(...departments.map(item => item.average));
   const step = 10 ** Math.floor(Math.log10(maximum));
   const scale = Math.ceil(maximum / step) * step;
   return <section className="dashboard-panel department-pay" aria-labelledby="department-pay-title">
     <h3 id="department-pay-title">Average base pay by department</h3>
-    <p className="muted">Annual salaries in {currency} for the current filters</p>
+    <p className="muted">Select a department to explore its employees in {currency}.</p>
     <div className="department-chart">
       <div className="department-scale" aria-hidden="true">
         {[scale, scale / 2, 0].map(value => <span key={value}>{number.format(value / 100)}</span>)}
@@ -238,9 +243,12 @@ function DepartmentPay({ currency, departments, department }) {
         {departments.map(item => <li key={item.department} className={department === item.department ? 'filtered-department' : undefined}>
           <button className="department-plot"
             aria-label={item.department + ': ' + money(item.average, currency) + ', ' + number.format(item.headcount) + (item.headcount === 1 ? ' employee' : ' employees')}
-            aria-pressed={activeColumn === item.department}
-            onClick={() => setActiveColumn(current => current === item.department ? null : item.department)}
-            onKeyDown={event => { if (event.key === 'Escape') setActiveColumn(null); }}>
+            aria-pressed={focus?.key === 'department:' + item.department}
+            onClick={() => onSelect({
+              key: 'department:' + item.department, label: item.department + ' · ' + currency, count: item.headcount,
+              params: { currency, department: item.department },
+            })}
+            onKeyDown={event => { if (event.key === 'Escape' && focus?.key === 'department:' + item.department) onSelect(null); }}>
             <span className="department-bar" aria-hidden="true"
               ref={node => node?.style.setProperty('--bar-height', item.average / scale * 100 + '%')} />
             <span className="department-tooltip" aria-hidden="true">{money(item.average, currency, 'symbol')} · {number.format(item.headcount)} {item.headcount === 1 ? 'employee' : 'employees'}</span>
@@ -266,8 +274,10 @@ function SalaryWorkspace({ onExpired, view }) {
   const [selected, setSelected] = useState(null);
   const [revision, setRevision] = useState(0);
   const [chartCurrency, setChartCurrency] = useState('');
+  const [focus, setFocus] = useState(null);
+  const [directoryScope, setDirectoryScope] = useState(null);
   const overview = view === 'dashboard';
-  const params = overview ? { country: query.country, department: query.department } : query;
+  const params = overview ? { country: query.country, department: query.department } : { ...query, ...directoryScope?.params };
   const requestPath = 'employees?' + new URLSearchParams(params);
   const pending = loading || settledQuery !== requestPath;
 
@@ -297,7 +307,17 @@ function SalaryWorkspace({ onExpired, view }) {
   const filtersActive = query.country || query.department;
   const selectedPay = result?.summary.find(item => item.currency === chartCurrency) ?? result?.summary[0];
   function filter(event) {
+    setFocus(null);
+    setDirectoryScope(null);
     setQuery(current => ({ ...current, [event.target.name]: event.target.value, page: 1 }));
+  }
+  function openDirectory(scope) {
+    setDirectoryScope(scope);
+    setSearch('');
+    setQuery(current => ({ ...current, q: '', page: 1 }));
+  }
+  function selectSegment(segment) {
+    setFocus(current => current?.key === segment?.key ? null : segment);
   }
 
   return <>
@@ -311,10 +331,8 @@ function SalaryWorkspace({ onExpired, view }) {
         <h2 id="overview">Pay overview</h2>
         {!pending && !error && result && <div className="overview-actions">
           <span>{number.format(result.total)} matching {result.total === 1 ? 'employee' : 'employees'}</span>
-          {result.total > 0 && <a className="matching-link" href="#directory" onClick={() => {
-            setSearch('');
-            setQuery(current => ({ ...current, q: '', page: 1 }));
-          }}>View matching employees <span aria-hidden="true">→</span></a>}
+          {result.total > 0 && <a className="matching-link" href="#directory" onClick={() => openDirectory(null)}>
+            View matching employees <span aria-hidden="true">→</span></a>}
         </div>}
       </div>}
       <section className={overview ? 'controls overview-controls' : 'controls'} aria-label={overview ? 'Pay overview filters' : 'Employee filters'}>
@@ -335,21 +353,42 @@ function SalaryWorkspace({ onExpired, view }) {
         </select></div>
         {(filtersActive || (!overview && (search || query.q))) && <button className="reset" onClick={() => {
           if (!overview) setSearch('');
+          setFocus(null);
+          setDirectoryScope(null);
           setQuery(current => ({ q: overview ? current.q : '', country: '', department: '', page: 1 }));
         }}>Clear filters</button>}
       </section>
+      {!overview && directoryScope && <div className="analysis-selection">
+        <div><strong>{directoryScope.label}</strong><p className="muted">Chart selection</p></div>
+        <a href="#dashboard">Back to analysis</a>
+        <button className="reset" onClick={() => {
+          setDirectoryScope(null);
+          setQuery(current => ({ ...current, page: 1 }));
+        }}>Remove chart filter</button>
+      </div>}
       {filterError && <p className="error" role="alert">Filters could not load. {filterError}</p>}
       {pending ? <p role="status">Loading salary data…</p> : error ?
         <p className="error" role="alert">{error} <button onClick={() => setRevision(value => value + 1)}>Retry</button></p> :
         result && (overview ?
           <section aria-labelledby="overview">
             {!selectedPay ? <p className="empty">No employees match your filters.</p> : <div className="dashboard-panels">
-              <div className="dashboard-feature">
-                <PaySummary selected={selectedPay} summary={result.summary} total={result.total} onCurrencyChange={setChartCurrency} />
-                <DepartmentPay key={selectedPay.currency} currency={selectedPay.currency} department={query.department}
-                  departments={result.departmentPay.filter(row => row.currency === selectedPay.currency)} />
+              <PaySummary selected={selectedPay} summary={result.summary} total={result.total} onCurrencyChange={currency => {
+                if (selectedPay.currency !== currency) setFocus(null);
+                setChartCurrency(currency);
+              }} />
+              <div className={focus ? 'analysis-selection has-selection' : 'analysis-selection'} aria-live="polite">
+                {focus ? <>
+                  <div><strong>{focus.label}</strong><p className="muted">{number.format(focus.count)} {focus.count === 1 ? 'employee' : 'employees'} in this selection</p></div>
+                  <a className="matching-link" href="#directory" onClick={() => openDirectory(focus)}>Open selected employees <span aria-hidden="true">→</span></a>
+                  <button className="reset" onClick={() => setFocus(null)}>Clear selection</button>
+                </> : <p className="muted">Select a department column or salary band to open the employees behind it.</p>}
               </div>
-              <SalaryBands selected={selectedPay} counts={result.salaryBands.filter(row => row.currency === selectedPay.currency)} />
+              <div className="dashboard-feature">
+                <DepartmentPay key={selectedPay.currency} currency={selectedPay.currency} department={query.department}
+                  departments={result.departmentPay.filter(row => row.currency === selectedPay.currency)} focus={focus} onSelect={selectSegment} />
+                <SalaryBands selected={selectedPay} counts={result.salaryBands.filter(row => row.currency === selectedPay.currency)}
+                  focus={focus} onSelect={selectSegment} />
+              </div>
               <PayChart selected={selectedPay} />
             </div>}
           </section> :
@@ -381,7 +420,7 @@ function SalaryWorkspace({ onExpired, view }) {
           </section>)}
     </main>
     {selected !== null && <SalaryEditor id={selected} close={() => setSelected(null)}
-      onSaved={() => setRevision(value => value + 1)} />}
+      onSaved={() => { setFocus(null); setRevision(value => value + 1); }} />}
   </>;
 }
 
